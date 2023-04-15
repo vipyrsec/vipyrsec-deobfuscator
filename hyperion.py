@@ -15,7 +15,6 @@ If the malware author somehow removed it, then lines like
 and generally weird looking pseudo-math code is probably Hyperion
 """
 
-import argparse
 import ast
 import binascii
 import re
@@ -30,7 +29,7 @@ def hyperion_deobf(file: TextIO) -> list[str]:
     code = zlib.decompress(
         b''.join(map(
             ast.literal_eval,
-            re.findall(r"b'.+'", file.read())
+            re.findall(r"b['\"].+['\"]", file.read())
         ))
     ).decode()
     results = [
@@ -45,26 +44,15 @@ def hyperion_deobf(file: TextIO) -> list[str]:
     return results
 
 
-def run() -> NoReturn:
-    parser = argparse.ArgumentParser(
-        prog='HyperD',
-        description='Deobfuscates Hyperion Obfuscated Scripts'
-    )
-    parser.add_argument('-p', '--path')
-    args = parser.parse_args()
-    try:
-        with open(args.path, 'r') as file:
-            results = hyperion_deobf(file)
-    except Exception as e:
-        print('This is probably a different obfuscation schema.')
-        print('Exception: ', e)
+def format_hyperion(urls: list[str]) -> NoReturn:
+    webhooks = [url for url in urls if 'https://discord.com/api/webhooks' in url]
+    if webhooks:
+        return ('Webhooks:\n'
+                + '\n'.join(webhooks))
     else:
-        print('Results:')
-        print(*results, sep='\n')
-        print('\n')
-        print('Webhook candidates:')
-        print(*(i for i in results if 'https://discord.com/api/webhooks' in i), sep='\n')
+        return ('No webhooks found, displaying all urls:\n'
+                + '\n'.join(urls))
 
 
 if __name__ == '__main__':
-    run()
+    pass

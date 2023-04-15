@@ -8,7 +8,6 @@ If the file begins with
 Then it's likely this obfuscation schema
 """
 
-import argparse
 import ast
 import base64
 import codecs
@@ -36,35 +35,22 @@ def lzma_b64_deobf(file: TextIO) -> re.Match:
     var_code, mal_code = re.split(r';(?=[^;]+$)', code)
     doggo = {k: v for k, v in re.findall(r'(_{3,})="(.+?)"(?:;|$)', var_code)}
     a, b, c, d = map(doggo.get, re.findall(r'_{3,}', mal_code))
-    webhook = re.search(
+    webhook_match = re.search(
         r'https://discord\.com/api/webhooks/[\w/]+',
         str(base64.b64decode(
             codecs.decode(a, 'rot13') + b + c[::-1] + d
         ))
     )
-    return webhook
+    return webhook_match
 
 
-def run() -> NoReturn:
-    parser = argparse.ArgumentParser(
-        prog='LZMA Spam',
-        description='Deobfuscates LZMASpam Obfuscated Scripts'
-    )
-    parser.add_argument('-p', '--path')
-    args = parser.parse_args()
-    try:
-        with open(args.path, 'r') as file:
-            webhook = lzma_b64_deobf(file)
-    except Exception as e:
-        print('This is probably a different obfuscation schema.')
-        print('Exception: ', e)
+def format_lzma_b64(webhook_match: re.Match) -> NoReturn:
+    if webhook_match:
+        return (f'Webhook:\n'
+                f'{webhook_match.group(0)}')
     else:
-        if webhook:
-            print('Webhook:')
-            print(webhook.group(0))
-        else:
-            print('No webhook found :(')
+        return "S-sorry, w-we didn't f-find a webhook :("
 
 
 if __name__ == '__main__':
-    run()
+    pass
