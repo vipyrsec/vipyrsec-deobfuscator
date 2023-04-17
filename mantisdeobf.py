@@ -1,12 +1,35 @@
-from hyperion import hyperion_deobf
-from lzmaspam import lzma_b64_deobf
-
 import argparse
+import traceback
+from typing import Callable, NoReturn, TextIO, TypeVar
 
-supported_obfuscations = ['hyperion', 'lzmaspam']
+from exceptions import DeobfuscationFailError, InvalidSchemaError
+from hyperion import format_hyperion, hyperion_deobf
+from lzmaspam import format_lzma_b64, lzma_b64_deobf
+
+R = TypeVar('R')
+
+supported_obfuscations: dict[str, tuple[Callable[[TextIO], R], Callable[[R], str]]] = {
+    'hyperion': (hyperion_deobf, format_hyperion),
+    'lzmaspam': (lzma_b64_deobf, format_lzma_b64)
+}
 
 
-def run():
+def run_deobf(file: TextIO, deobf_type: str) -> NoReturn:
+    if deobf_type not in supported_obfuscations:
+        raise InvalidSchemaError([*supported_obfuscations])
+
+    deobf_func, format_func = supported_obfuscations[deobf_type]
+    try:
+        results = deobf_func(file)
+    except Exception as e:
+        raise DeobfuscationFailError(
+            deobf_type=deobf_type,
+            exception=e
+        )
+    print(format_func(results))
+
+
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         prog='Mantis Deobfuscator',
         description='Deobfuscates Obfuscated Scripts'
@@ -14,20 +37,15 @@ def run():
     parser.add_argument('-p', '--path')
     parser.add_argument('-t', '--type')
     args = parser.parse_args()
-    while True:
-        if args.type in supported_obfuscations:
-            with open(args.path) as file:
-                if args.type == 'hyperion':
-                    hyperion_deobf(file)
-                    break
-                elif args.type == 'lzmaspam':
-                    lzma_b64_deobf(file)
-                    break
-        else:
-            print('Unsupported obfuscation schema.')
-            print('Supported obfuscations schemes include:')
-            print(*supported_obfuscations, sep=", ")
+    try:
+        with open(args.path, 'r') as file:
+            run_deobf(file, args.type)
+    except FileNotFoundError:
+        print(f'{args.path} is not a valid path.')
+    except InvalidSchemaError as e:
+        print(e)
+    except DeobfuscationFailError as e:
+        e.file = args.path
+        print(e)
+        print('\033[0;32m', *traceback.format_exception(e.exception))
 
-
-if __name__ == '__main__':
-    run()
