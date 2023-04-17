@@ -1,4 +1,5 @@
 import argparse
+import traceback
 from typing import Callable, NoReturn, TextIO, TypeVar
 
 from exceptions import DeobfuscationFailError, InvalidSchemaError
@@ -46,3 +47,5 @@ if __name__ == '__main__':
     except DeobfuscationFailError as e:
         e.file = args.path
         print(e)
+        print('\033[0;32m', *traceback.format_exception(e.exception))
+
