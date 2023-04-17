@@ -37,7 +37,7 @@ def lzma_b64_deobf(file: TextIO) -> re.Match:
     doggo = {k: v for k, v in re.findall(r'(_{3,})="(.+?)"(?:;|$)', var_code)}
     a, b, c, d = map(doggo.get, re.findall(r'_{3,}', mal_code))
     webhook = re.search(
-        r'https://discord\.com/api/webhooks/[\w/]+',
+        r'https://discord(?:app)?\.com/api/webhooks/.{88}',
         str(base64.b64decode(
             codecs.decode(a, 'rot13') + b + c[::-1] + d
         ))
