@@ -27,10 +27,10 @@ def hyperion_deobf(file: TextIO) -> list[str]:
     Extracts all strings containing 'https' from the code
     """
     code = zlib.decompress(
-        b''.join(map(
-            ast.literal_eval,
-            re.findall(r"b['\"].+['\"]", file.read())
-        ))
+        b''.join(
+            ast.literal_eval(byte_string)
+            for byte_string, _ in re.findall(r"(b(['\"]).+\2)", file.read())
+        )
     ).decode()
     results = [
         ast.literal_eval(url)
