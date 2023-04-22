@@ -8,17 +8,17 @@ from lzmaspam import format_lzma_b64, lzma_b64_deobf
 
 R = TypeVar('R')
 
-supported_obfuscations: dict[str, tuple[Callable[[TextIO], R], Callable[[R], str]]] = {
+supported_obfuscators: dict[str, tuple[Callable[[TextIO], R], Callable[[R], str]]] = {
     'hyperion': (hyperion_deobf, format_hyperion),
     'lzmaspam': (lzma_b64_deobf, format_lzma_b64)
 }
 
 
 def run_deobf(file: TextIO, deobf_type: str) -> NoReturn:
-    if deobf_type not in supported_obfuscations:
+    if deobf_type not in supported_obfuscators:
         raise InvalidSchemaError([*supported_obfuscations])
 
-    deobf_func, format_func = supported_obfuscations[deobf_type]
+    deobf_func, format_func = supported_obfuscators[deobf_type]
     try:
         results = deobf_func(file)
     except Exception as e:
@@ -32,7 +32,7 @@ def run_deobf(file: TextIO, deobf_type: str) -> NoReturn:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         prog='Mantis Deobfuscator',
-        description='Deobfuscates Obfuscated Scripts'
+        description='Deobfuscates obfuscated scripts'
     )
     parser.add_argument('-p', '--path')
     parser.add_argument('-t', '--type')
