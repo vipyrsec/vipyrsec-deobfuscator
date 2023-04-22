@@ -16,7 +16,7 @@ supported_obfuscators: dict[str, tuple[Callable[[TextIO], R], Callable[[R], str]
 
 def run_deobf(file: TextIO, deobf_type: str) -> NoReturn:
     if deobf_type not in supported_obfuscators:
-        raise InvalidSchemaError([*supported_obfuscations])
+        raise InvalidSchemaError([*supported_obfuscators])
 
     deobf_func, format_func = supported_obfuscators[deobf_type]
     try:
