@@ -13,7 +13,7 @@ import base64
 import codecs
 import lzma
 import re
-from typing import NoReturn, TextIO
+from typing import TextIO
 
 
 def lzma_b64_deobf(file: TextIO) -> re.Match:
@@ -44,7 +44,7 @@ def lzma_b64_deobf(file: TextIO) -> re.Match:
     return webhook_match
 
 
-def format_lzma_b64(webhook_match: re.Match) -> NoReturn:
+def format_lzma_b64(webhook_match: re.Match) -> str:
     if webhook_match:
         return (f'Webhook:\n'
                 f'{webhook_match.group(0)}')

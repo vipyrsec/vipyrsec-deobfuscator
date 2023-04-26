@@ -5,16 +5,23 @@ from typing import Callable, NoReturn, TextIO, TypeVar
 from exceptions import DeobfuscationFailError, InvalidSchemaError
 from hyperion import format_hyperion, hyperion_deobf
 from lzmaspam import format_lzma_b64, lzma_b64_deobf
+from vore import format_vore, vore_deobf
 
 R = TypeVar('R')
 
 supported_obfuscators: dict[str, tuple[Callable[[TextIO], R], Callable[[R], str]]] = {
     'hyperion': (hyperion_deobf, format_hyperion),
-    'lzmaspam': (lzma_b64_deobf, format_lzma_b64)
+    'lzmaspam': (lzma_b64_deobf, format_lzma_b64),
+    'vore': (vore_deobf, format_vore),
+}
+
+alias_dict: dict[str, str] = {
+    'vare': 'vore',
 }
 
 
 def run_deobf(file: TextIO, deobf_type: str) -> NoReturn:
+    deobf_type = alias_dict.get(deobf_type, deobf_type)
     if deobf_type not in supported_obfuscators:
         raise InvalidSchemaError([*supported_obfuscators])
 

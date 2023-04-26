@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Deobfuscator for the Hyperion obfuscation schema
 https://github.com/billythegoat356/Hyperion
@@ -19,7 +18,7 @@ import ast
 import binascii
 import re
 import zlib
-from typing import NoReturn, TextIO
+from typing import TextIO
 
 
 def hyperion_deobf(file: TextIO) -> list[str]:
@@ -44,7 +43,7 @@ def hyperion_deobf(file: TextIO) -> list[str]:
     return results
 
 
-def format_hyperion(urls: list[str]) -> NoReturn:
+def format_hyperion(urls: list[str]) -> str:
     webhooks = [url for url in urls if 'https://discord.com/api/webhooks' in url]
     if webhooks:
         return ('Webhooks:\n'
