@@ -32,7 +32,7 @@ def vore_deobf(file: TextIO) -> str:
 
 
 def format_vore(result: str) -> str:
-    return result + '\n\n' + '\n'.join(re.findall(r'https://discord(?:app)?\.com/api/webhooks/.{88}', result))
+    return result + '\n\n' + '\n'.join(re.findall(r'https?:\/\/(ptb\.|canary\.)?discord(app)?\.com\/api(\/v\d{1,2})?\/webhooks\/(\d{17,21})\/([\w-]{68})', result))
 
 
 if __name__ == '__main__':
