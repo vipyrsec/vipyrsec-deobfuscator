@@ -69,8 +69,6 @@ def hyperion_deobf(file: TextIO) -> list[str]:
     Extracts all strings containing 'https' from the code
     """
     no_frosting = ast.unparse(HyperionB64zlibBytes().visit(ast.parse(file.read())))
-    with open('/Users/stickie/PycharmProjects/mantis-deobfuscator/Sandboxes/sandbox1.txt', 'w') as file:
-        file.write(no_frosting)
     code = zlib.decompress(
         b''.join(
             ast.literal_eval(byte_string)
