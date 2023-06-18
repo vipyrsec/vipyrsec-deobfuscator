@@ -12,6 +12,7 @@ import zlib
 from typing import TextIO
 
 from cryptography.fernet import Fernet
+from ..utils import WEBHOOK_REGEX
 
 
 def vore_deobf(file: TextIO) -> str:
@@ -32,7 +33,7 @@ def vore_deobf(file: TextIO) -> str:
 
 
 def format_vore(result: str) -> str:
-    return result + '\n\n' + '\n'.join(re.findall(r'https?:\/\/(ptb\.|canary\.)?discord(app)?\.com\/api(\/v\d{1,2})?\/webhooks\/(\d{17,21})\/([\w-]{68})', result))
+    return result + '\n\n' + '\n'.join(re.findall(WEBHOOK_REGEX, result))
 
 
 if __name__ == '__main__':
