@@ -15,20 +15,66 @@ and generally weird looking pseudo-math code is probably Hyperion
 """
 
 import ast
+import base64
+from ast import *
 import binascii
 import re
 import zlib
 from typing import TextIO
 
 
+class HyperionB64zlibBytes(ast.NodeTransformer):
+    """
+    Temp transformer for the base64 zlib frosting until we get the better oven
+    """
+
+    def visit_Call(self, node: Call):
+        match node:
+            case Call(
+                func=Attribute(
+                  value=Call(
+                    func=Attribute(
+                      value=Call(func=Name(id='__import__'), args=[Constant(value='base64')]),
+                      attr='b64decode'),
+                    args=[
+                      Call(
+                        func=Attribute(
+                          value=Call(func=Name(id='__import__'),args=[Constant(value='zlib')]),
+                          attr='decompress'),
+                        args=[Constant(value=payload)])]),
+                  attr='decode')):
+                value = base64.b64decode(zlib.decompress(payload)).decode()
+                return Constant(value=value)
+            case Call(
+                    func=Attribute(
+                      value=Call(func=Name(id='__import__'), args=[Constant(value='base64')]),
+                      attr='b64decode'),
+                    args=[
+                      Call(
+                        func=Attribute(
+                          value=Call(func=Name(id='__import__'),args=[Constant(value='zlib')]),
+                          attr='decompress'),
+                        args=[Constant(value=payload)])]):
+                value = base64.b64decode(zlib.decompress(payload))
+                return Constant(value=value)
+            case _:
+                node.func = self.visit(node.func)
+                node.args = [self.visit(n) for n in node.args]
+                node.keywords = [self.visit(n) for n in node.keywords]
+                return node
+
+
 def hyperion_deobf(file: TextIO) -> list[str]:
     """
     Extracts all strings containing 'https' from the code
     """
+    no_frosting = ast.unparse(HyperionB64zlibBytes().visit(ast.parse(file.read())))
+    with open('/Users/stickie/PycharmProjects/mantis-deobfuscator/Sandboxes/sandbox1.txt', 'w') as file:
+        file.write(no_frosting)
     code = zlib.decompress(
         b''.join(
             ast.literal_eval(byte_string)
-            for byte_string, _ in re.findall(r"(b(['\"]).+\2)", file.read())
+            for byte_string, _ in re.findall(r"(?<!i)(b(['\"]).+\2)", no_frosting)
         )
     ).decode()
     results = [
