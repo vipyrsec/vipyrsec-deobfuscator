@@ -7,6 +7,10 @@ authors = [
     { name = "Bradley Reynolds", email = "bradley.reynolds@darbia.dev" },
 ]
 license = { text = "MIT" }
+dependencies = [
+    # deobfuscators/vore
+    "cryptography",
+]
 
 [project.urls]
 repository = "https://github.com/vipyrsec/vipyrsec-deobfuscator/"
