@@ -39,7 +39,7 @@ def run_deobf(file: TextIO, deobf_type: str) -> NoReturn:
 
 def run():
     parser = argparse.ArgumentParser(
-        prog='Mantis Deobfuscator',
+        prog='Vipyr Deobfuscator',
         description='Deobfuscates obfuscated scripts'
     )
     parser.add_argument('-p', '--path')
