@@ -1,4 +1,4 @@
-from .mantis import run_deobf
+from .mantis import run
 
 if __name__ == '__main__':
-    run_deobf()
+    run()

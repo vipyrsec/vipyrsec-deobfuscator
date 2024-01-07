@@ -1,5 +1,7 @@
 """
 Full deobfuscator for hyperion
+
+Status: INCOMPLETE
 """
 
 import ast

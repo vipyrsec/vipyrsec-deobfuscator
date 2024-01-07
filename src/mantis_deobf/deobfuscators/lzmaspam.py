@@ -51,7 +51,7 @@ def format_lzma_b64(webhook_match: re.Match) -> str:
         return (f'Webhook:\n'
                 f'{webhook_match.group(0)}')
     else:
-        return "S-sorry, w-we didn't f-find a webhook :("
+        return "No webhook found."
 
 
 if __name__ == '__main__':

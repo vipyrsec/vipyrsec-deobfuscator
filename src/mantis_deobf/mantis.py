@@ -29,15 +29,15 @@ def run_deobf(file: TextIO, deobf_type: str) -> NoReturn:
     deobf_func, format_func = supported_obfuscators[deobf_type]
     try:
         results = deobf_func(file)
-    except Exception as e:
+    except Exception as exception:
         raise DeobfuscationFailError(
             deobf_type=deobf_type,
-            exception=e
+            exception=exception,
         )
     print(format_func(results))
 
 
-if __name__ == '__main__':
+def run():
     parser = argparse.ArgumentParser(
         prog='Mantis Deobfuscator',
         description='Deobfuscates obfuscated scripts'
@@ -56,3 +56,7 @@ if __name__ == '__main__':
         e.file = args.path
         print(e)
         print('\033[0;32m', *traceback.format_exception(e.exception))
+
+
+if __name__ == '__main__':
+    run()
