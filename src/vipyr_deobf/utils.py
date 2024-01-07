@@ -19,11 +19,3 @@ def unwrap_base64_b64decode(inp_string):
         lambda s: f"'{base64.b64decode(bytes(map(int, s.group(1).split(', ')))).decode()}'",
         inp_string
     )
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()
