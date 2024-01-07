@@ -22,6 +22,8 @@ import re
 import zlib
 from typing import TextIO
 
+from ..utils import WEBHOOK_REGEX
+
 
 class HyperionB64zlibBytes(ast.NodeTransformer):
     """
@@ -88,7 +90,7 @@ def hyperion_deobf(file: TextIO) -> list[str]:
 
 
 def format_hyperion(urls: list[str]) -> str:
-    webhooks = [url for url in urls if 'https://discord.com/api/webhooks' in url]
+    webhooks = [url for url in urls if re.search(WEBHOOK_REGEX, url)]
     if webhooks:
         return ('Webhooks:\n'
                 + '\n'.join(webhooks))
