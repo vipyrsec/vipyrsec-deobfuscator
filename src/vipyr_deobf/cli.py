@@ -2,7 +2,7 @@ import argparse
 import traceback
 from typing import Callable, NoReturn, TextIO, TypeVar
 
-from exceptions import DeobfuscationFailError, InvalidSchemaError
+from .exceptions import DeobfuscationFailError, InvalidSchemaError
 from .deobfuscators.hyperion import format_hyperion, hyperion_deobf
 from .deobfuscators.lzmaspam import format_lzma_b64, lzma_b64_deobf
 from .deobfuscators.vore import format_vore, vore_deobf
@@ -39,7 +39,7 @@ def run_deobf(file: TextIO, deobf_type: str) -> NoReturn:
 
 def run():
     parser = argparse.ArgumentParser(
-        prog='Mantis Deobfuscator',
+        prog='Vipyr Deobfuscator',
         description='Deobfuscates obfuscated scripts'
     )
     parser.add_argument('-p', '--path')
