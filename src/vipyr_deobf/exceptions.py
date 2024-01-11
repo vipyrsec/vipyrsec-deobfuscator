@@ -1,5 +1,5 @@
-from typing import Literal
 import traceback
+from typing import Literal
 
 
 class Error(Exception):

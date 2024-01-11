@@ -1,4 +1,5 @@
 import sys
+
 sys.exit()
 
 class set:
@@ -37,6 +38,7 @@ maptype=maptype([str(),(),_(
 maptype_dict = {'_________': 'chr', '________': 'reversed', '________________': 'name', '_______________': 'iter', '_________________________': 'true', '___________________': 'builtins_get', '_': 'getattr', '________________________': 'complex', '__________': 'str_', '__________________': '__eq__', '____________________': 'empty_list', '____': 'pow', '_______________________': '__file__', '___________': '__ge__', '_____________________': 'ord', '__': 'empty_dict', '______________________': 'globals', '_____________': 'int', '_________________': '__class__', '___': 'new_maptype', '____________': '__dir__', '______________': 'hex', '______': 'set', 'maptype': 'maptype', '_____': 'str'}
 
 import pickle
+
 reversed=maptype.new_maptype([maptype.str_(),(),maptype.set()()])
 
 

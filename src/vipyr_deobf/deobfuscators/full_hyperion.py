@@ -6,10 +6,10 @@ Status: INCOMPLETE
 
 import ast
 import binascii
-from ast import *
 import zlib
+from ast import *
 from io import BytesIO
-from typing import TextIO, Any
+from typing import Any, TextIO
 
 
 class FirstLayer(NodeVisitor):

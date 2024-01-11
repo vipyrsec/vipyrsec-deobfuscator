@@ -1,4 +1,5 @@
 import sys
+
 sys.exit()
 
 maptype=lambda getattr:type(*getattr)
@@ -13,6 +14,7 @@ class set:
 new_maptype=[]
 
 import pickle
+
 reversed=maptype.new_maptype([maptype.str_(),(),maptype.set()()])
 
 

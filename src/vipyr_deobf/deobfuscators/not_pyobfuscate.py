@@ -1,10 +1,10 @@
-import base64
-import zlib
-import re
 import ast
+import base64
 import binascii
-from typing import TextIO
+import re
+import zlib
 from io import StringIO
+from typing import TextIO
 
 from src.vipyr_deobf.exceptions import DeobfuscationFailError
 from src.vipyr_deobf.utils import BYTES_WEBHOOK_REGEX

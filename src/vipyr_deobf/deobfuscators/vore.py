@@ -12,6 +12,7 @@ import zlib
 from typing import TextIO
 
 from cryptography.fernet import Fernet
+
 from src.vipyr_deobf.utils import WEBHOOK_REGEX
 
 
