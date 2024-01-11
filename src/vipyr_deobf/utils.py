@@ -6,6 +6,9 @@ import ast
 WEBHOOK_REGEX = re.compile(
     r'https?://(ptb\.|canary\.)?discord(app)?\.com/api(/v\d{1,2})?/webhooks/(\d{17,21})/([\w-]{68})'
 )
+BYTES_WEBHOOK_REGEX = re.compile(
+    br'https?://(ptb\.|canary\.)?discord(app)?\.com/api(/v\d{1,2})?/webhooks/(\d{17,21})/([\w-]{68})'
+)
 
 
 def unwrap_base64_b64decode(inp_string):

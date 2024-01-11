@@ -2,82 +2,162 @@ import base64
 import zlib
 import re
 import ast
-from pathlib import Path
-import argparse
+import binascii
+from typing import TextIO
+from io import StringIO
+
+from src.vipyr_deobf.exceptions import DeobfuscationFailError
+from src.vipyr_deobf.utils import BYTES_WEBHOOK_REGEX
 
 
-def extract_payload(filename: Path) -> str:
-    bytes_regex = re.compile(r"\(b'.*'\)")
-    with open(filename, 'r') as f:
-        payload = f.read()
-    return re.search(bytes_regex, payload)[0]
+class ByteStringFinder(ast.NodeVisitor):
+    def __init__(self):
+        self.results = []
+
+    def visit_Constant(self, node):
+        if isinstance(node.value, bytes):
+            self.results.append(node.value)
 
 
-def prepare_layer(payload: str) -> str:
-    return ast.literal_eval(payload)
+def nab_surface_payload(surface_code: str) -> bytes:
+    try:
+        tree = ast.parse(surface_code)
+    # Other exceptions may appear, generalize this in the future
+    except SyntaxError as exc:
+        raise DeobfuscationFailError(
+            'Input text is not valid python',
+            severity='critical',
+            status='expected',
+            exc=exc,
+        )
+    bsf = ByteStringFinder()
+    bsf.visit(tree)
+    if len(bsf.results) > 1:
+        raise DeobfuscationFailError(
+            f'Multiple byte strings found:\n{'\n'.join(map(repr, bsf.results))}',
+            severity='medium',
+            status='expected',
+        )
+    elif not bsf.results:
+        raise DeobfuscationFailError(
+            'No byte strings found in surface file',
+            severity='critical',
+            status='expected',
+        )
+    return bsf.results[0]
 
 
-def decode_layer(payload: str) -> str:
-    reverse = payload[::-1]
-    debase = base64.b64decode(reverse)
-    decompress = zlib.decompress(debase)
-    return decompress
+def deobf_obf(obf_bytes: bytes) -> bytes:
+    """
+    Deobfuscates the obf function as defined in not_pyobfuscate.md
+    """
+    result = obf_bytes[::-1]
+    try:
+        result = base64.b64decode(result)
+        result = zlib.decompress(result)
+    except (binascii.Error, zlib.error) as exc:
+        raise DeobfuscationFailError(
+            f'Error in deobf_obf when trying to deobfuscate {obf_bytes}',
+            severity='critical',
+            status='expected',
+            exc=exc,
+        )
+    return result
 
 
-def _get_payload_indices(marshalled_payload: bytes) -> bytes:
-    magic_bytes = b"\x02\x73\x00\x00\x00\x00"
-    magic_bytes_end = b"\x4e\x29"
-    payload_index_starts = []
-    payload_index_ends = []
-    for i in range(len(marshalled_payload)):
-        substring = marshalled_payload[i:i+len(magic_bytes)]
-        if substring[0:1] == magic_bytes[0:1] and substring[-2:] == magic_bytes[-2:]:
-            start_index = i+len(magic_bytes)
-            payload_index_starts.append(start_index)
-    for i in range(len(marshalled_payload)):
-        substring = marshalled_payload[i:i+len(magic_bytes_end)]
-        if substring == magic_bytes_end:
-            payload_index_ends.append(i)
-    return payload_index_starts, payload_index_ends
+def nab_bytes(marshalled_bytes: bytes) -> bytes:
+    """
+    Nabs the payload bytes from the marshalled code object
+    Tries the shortcut with the hardcoded payload index first, and then tries regex
+    """
+    try:
+        return index_nab_bytes(marshalled_bytes)
+    except DeobfuscationFailError:
+        pass
+    # TODO: in the future, raise a warning if this happens
+    return regex_nab_bytes(marshalled_bytes)
 
 
-def _try_decode(marshalled_code: bytes, payload_starts: list, payload_ends: list) -> bytes:
-    for starts in payload_starts:
-        for ends in payload_ends:
-            try:
-                return decode_layer(marshalled_code[starts:ends])
-            except: # Todo: Fix bare except with appropriate exception handling.
-                print('Multiple valid substrings detected, trying next payload...')
-                pass
+def index_nab_bytes(marshalled_bytes: bytes) -> bytes:
+    """
+    Uses the hardcoded index of 73 to grab the payload
+    """
+    header = marshalled_bytes[73:79]
+    if header[:2] != b'\x02s':
+        raise DeobfuscationFailError(
+            'Bytes at index 73 is not header for bytes',
+            severity='low',
+            status='expected',
+        )
+    payload_len = int.from_bytes(header[2:][::-1])
+    payload_start = 79
+    payload_end = payload_start + payload_len
+    payload = marshalled_bytes[payload_start:payload_end]
+    trailer = marshalled_bytes[payload_end:payload_end + 2]
+    if trailer != b'N)':
+        raise DeobfuscationFailError(
+            'Malformed marshal payload, length does not match trailer',
+            severity='low',
+            status='expected',
+        )
+    return payload
 
 
-def decode_layer_secondary(marshalled_payload: bytes) -> bytes:
-    starts, ends =_get_payload_indices(marshalled_payload)
-    return _try_decode(marshalled_payload, starts, ends)
+def regex_nab_bytes(marshalled_bytes: bytes) -> bytes:
+    """
+    Uses regex to grab the payload
+    """
+    # Keep track of the current idx, so we can discard '\x02s' headers when they appear within other strings
+    current_idx = 0
+    rtn_bytes = []
+    for header in re.finditer(rb'\x02s([\x00-\xff]{4})', marshalled_bytes):
+        if header.end() < current_idx:
+            continue
+        payload_start = header.end()
+        payload_len = int.from_bytes(header.group(1)[::-1])
+        payload = marshalled_bytes[payload_start: payload_start + payload_len]
+        trailer = marshalled_bytes[payload_start + payload_len: payload_start + payload_len + 2]
+        if trailer != b'N)':
+            raise DeobfuscationFailError(
+                'Malformed marshal payload, length does not match trailer',
+                severity='low',
+                status='expected',
+            )
+        rtn_bytes.append(payload)
+        current_idx = payload_start + payload_len + 2
+    if len(rtn_bytes) > 1:
+        raise DeobfuscationFailError(
+            'Multiple payloads found in bytes',
+            severity='low',
+            status='expected',
+        )
+    return rtn_bytes[0]
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        prog = 'Pyobfuscate Decoder',
-        description = 'Attempts to decode PyObfuscate obfuscation.'
-    )
-    parser.add_argument('filename')
-    args = parser.parse_args()
-    extracted_payload = extract_payload(args.filename)
-    prepared_payload = prepare_layer(extracted_payload)
-    decoded_layer = decode_layer(prepared_payload)
+def deobf_not_pyobfuscate(file: TextIO) -> bytes:
+    """
+    Deobfuscates the not pyobfuscate schema
+    :return: Marshalled code object of the source code
+    """
+    obf_bytes = nab_surface_payload(file.read())
     while True:
-        print(decoded_layer[0:200])
-        user_in = input("Is this your code?(Y/N/Q) ")
-        if user_in.upper() == 'Y':
-            print(decoded_layer)
-            break
-        elif user_in.upper() == 'N':
-            decoded_layer = decode_layer_secondary(decoded_layer)
-        else:
-            print("Goodbye.")
-            break
+        marshalled_bytes = deobf_obf(obf_bytes)
+        try:
+            obf_bytes = nab_bytes(marshalled_bytes)
+        except DeobfuscationFailError:
+            return marshalled_bytes
+        if not obf_bytes:
+            return marshalled_bytes
 
 
-if __name__ == '__main__':
-    main()
+def format_not_pyobfuscate(marshalled_bytes: bytes) -> str:
+    webhooks = BYTES_WEBHOOK_REGEX.findall(marshalled_bytes)
+    rtn_string = StringIO()
+    rtn_string.write(f'Marshalled bytes:\n{marshalled_bytes!r}\n')
+
+    if webhooks:
+        rtn_string.write('\nWebhooks found:\n')
+        for webhook in webhooks:
+            rtn_string.write(f'{webhook.decode()}\n')
+
+    return rtn_string.getvalue()
