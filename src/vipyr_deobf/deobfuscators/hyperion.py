@@ -16,13 +16,13 @@ and generally weird looking pseudo-math code is probably Hyperion
 
 import ast
 import base64
-from ast import *
 import binascii
 import re
 import zlib
+from ast import *
 from typing import TextIO
 
-from ..utils import WEBHOOK_REGEX
+from src.vipyr_deobf.utils import WEBHOOK_REGEX
 
 
 class HyperionB64zlibBytes(ast.NodeTransformer):
