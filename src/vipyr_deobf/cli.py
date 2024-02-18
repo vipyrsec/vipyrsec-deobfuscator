@@ -1,5 +1,4 @@
 import argparse
-import traceback
 from typing import Callable, NoReturn, TextIO, TypeVar
 
 from deobfuscators.hyperion import format_hyperion, hyperion_deobf
