@@ -6,8 +6,8 @@ import zlib
 from io import StringIO
 from typing import TextIO
 
-from src.vipyr_deobf.exceptions import DeobfuscationFailError
-from src.vipyr_deobf.utils import BYTES_WEBHOOK_REGEX
+from vipyr_deobf.exceptions import DeobfuscationFailError
+from vipyr_deobf.utils import BYTES_WEBHOOK_REGEX
 
 
 class ByteStringFinder(ast.NodeVisitor):

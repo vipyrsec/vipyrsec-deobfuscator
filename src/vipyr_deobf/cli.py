@@ -1,10 +1,10 @@
 import argparse
 from typing import Callable, NoReturn, TextIO, TypeVar
 
-from deobfuscators.hyperion import format_hyperion, hyperion_deobf
-from deobfuscators.lzmaspam import format_lzma_b64, lzma_b64_deobf
-from deobfuscators.vore import format_vore, vore_deobf
-from exceptions import DeobfuscationFailError, InvalidSchemaError
+from .deobfuscators.hyperion import format_hyperion, hyperion_deobf
+from .deobfuscators.lzmaspam import format_lzma_b64, lzma_b64_deobf
+from .deobfuscators.vore import format_vore, vore_deobf
+from .exceptions import DeobfuscationFailError, InvalidSchemaError
 
 R = TypeVar('R')
 
