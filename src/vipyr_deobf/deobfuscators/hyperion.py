@@ -22,7 +22,7 @@ import zlib
 from ast import *
 from typing import TextIO
 
-from src.vipyr_deobf.utils import WEBHOOK_REGEX
+from vipyr_deobf.utils import WEBHOOK_REGEX
 
 
 class HyperionB64zlibBytes(ast.NodeTransformer):

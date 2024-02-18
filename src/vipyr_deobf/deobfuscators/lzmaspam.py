@@ -15,7 +15,7 @@ import lzma
 import re
 from typing import TextIO
 
-from src.vipyr_deobf.utils import WEBHOOK_REGEX
+from vipyr_deobf.utils import WEBHOOK_REGEX
 
 
 def lzma_b64_deobf(file: TextIO) -> re.Match:
