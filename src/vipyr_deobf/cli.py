@@ -19,6 +19,7 @@ supported_obfuscators: dict[str, tuple[Callable[[TextIO], R], Callable[[R], str]
 alias_dict: dict[str, str] = {
     'vare': 'vore',
     'hyperd': 'hyperion',
+    'fct-obfuscate': 'not_pyobfuscate',
 }
 
 
