@@ -18,7 +18,7 @@ from typing import TextIO
 from vipyr_deobf.utils import WEBHOOK_REGEX
 
 
-def lzma_b64_deobf(file: TextIO) -> re.Match:
+def deobf_lzma_b64(file: TextIO) -> re.Match:
     """
     Extracts webhook from code
     """
