@@ -66,7 +66,7 @@ class HyperionB64zlibBytes(ast.NodeTransformer):
                 return node
 
 
-def hyperion_deobf(file: TextIO) -> list[str]:
+def deobf_hyperion(file: TextIO) -> list[str]:
     """
     Extracts all strings containing 'https' from the code
     """
