@@ -1,19 +1,17 @@
 import argparse
 from typing import Callable, NoReturn, TextIO, TypeVar
 
-from .deobfuscators.hyperion import format_hyperion, deobf_hyperion
-from .deobfuscators.lzmaspam import format_lzma_b64, deobf_lzma_b64
-from .deobfuscators.vore import format_vore, deobf_vore
-from .deobfuscators.not_pyobfuscate import format_not_pyobfuscate, deobf_not_pyobfuscate
+from .deobfuscators.hyperion import format_hyperion, hyperion_deobf
+from .deobfuscators.lzmaspam import format_lzma_b64, lzma_b64_deobf
+from .deobfuscators.vore import format_vore, vore_deobf
 from .exceptions import DeobfuscationFailError, InvalidSchemaError
 
 R = TypeVar('R')
 
 supported_obfuscators: dict[str, tuple[Callable[[TextIO], R], Callable[[R], str]]] = {
-    'hyperion': (deobf_hyperion, format_hyperion),
-    'lzmaspam': (deobf_lzma_b64, format_lzma_b64),
-    'vore': (deobf_vore, format_vore),
-    'not_pyobfuscate': (deobf_not_pyobfuscate, format_not_pyobfuscate),
+    'hyperion': (hyperion_deobf, format_hyperion),
+    'lzmaspam': (lzma_b64_deobf, format_lzma_b64),
+    'vore': (vore_deobf, format_vore),
 }
 
 alias_dict: dict[str, str] = {

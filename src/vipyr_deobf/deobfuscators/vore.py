@@ -16,7 +16,7 @@ from cryptography.fernet import Fernet
 from vipyr_deobf.utils import WEBHOOK_REGEX
 
 
-def deobf_vore(file: TextIO) -> str:
+def vore_deobf(file: TextIO) -> str:
     """
     Extracts the entire source code from code
     """

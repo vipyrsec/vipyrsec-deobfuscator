@@ -53,10 +53,7 @@ def deobf_obf(obf_bytes: bytes) -> bytes:
     """
     result = obf_bytes[::-1]
     try:
-        try:
-            result = base64.b64decode(result)
-        except zlib.error:
-            result = base64.b32decode(result)
+        result = base64.b64decode(result)
         result = zlib.decompress(result)
     except (binascii.Error, zlib.error) as exc:
         raise DeobfuscationFailError(
