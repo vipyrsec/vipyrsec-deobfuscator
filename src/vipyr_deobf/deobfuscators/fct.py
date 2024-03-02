@@ -5,6 +5,7 @@ import re
 import zlib
 from io import StringIO
 from typing import TextIO
+import logging
 
 from ..exceptions import DeobfuscationFailError
 from ..utils import BYTES_WEBHOOK_REGEX
@@ -20,30 +21,21 @@ class ByteStringFinder(ast.NodeVisitor):
 
 
 def nab_surface_payload(surface_code: str) -> bytes:
+    logging.info('Nabbing surface payload')
     try:
         tree = ast.parse(surface_code)
     # Other exceptions may appear, generalize this in the future
     except SyntaxError as exc:
         raise DeobfuscationFailError(
             'Input text is not valid python',
-            severity='critical',
-            status='expected',
             exc=exc,
         )
     bsf = ByteStringFinder()
     bsf.visit(tree)
     if len(bsf.results) > 1:
-        raise DeobfuscationFailError(
-            f'Multiple byte strings found:\n{'\n'.join(map(repr, bsf.results))}',
-            severity='medium',
-            status='expected',
-        )
+        raise DeobfuscationFailError('Multiple byte strings found')
     elif not bsf.results:
-        raise DeobfuscationFailError(
-            'No byte strings found in surface file',
-            severity='critical',
-            status='expected',
-        )
+        raise DeobfuscationFailError('No byte strings found in surface file')
     return bsf.results[0]
 
 
@@ -61,8 +53,6 @@ def deobf_obf(obf_bytes: bytes) -> bytes:
     except (binascii.Error, zlib.error) as exc:
         raise DeobfuscationFailError(
             f'Error in deobf_obf when trying to deobfuscate {obf_bytes}',
-            severity='critical',
-            status='expected',
             exc=exc,
         )
     return result
@@ -87,22 +77,14 @@ def index_nab_bytes(marshalled_bytes: bytes) -> bytes:
     """
     header = marshalled_bytes[73:79]
     if header[:2] != b'\x02s':
-        raise DeobfuscationFailError(
-            'Bytes at index 73 is not header for bytes',
-            severity='low',
-            status='expected',
-        )
+        raise DeobfuscationFailError('Bytes at index 73 is not header for bytes')
     payload_len = int.from_bytes(header[2:][::-1])
     payload_start = 79
     payload_end = payload_start + payload_len
     payload = marshalled_bytes[payload_start:payload_end]
     trailer = marshalled_bytes[payload_end:payload_end + 2]
     if trailer != b'N)':
-        raise DeobfuscationFailError(
-            'Malformed marshal payload, length does not match trailer',
-            severity='low',
-            status='expected',
-        )
+        raise DeobfuscationFailError('Malformed marshal payload, length does not match trailer',)
     return payload
 
 
@@ -121,19 +103,13 @@ def regex_nab_bytes(marshalled_bytes: bytes) -> bytes:
         payload = marshalled_bytes[payload_start: payload_start + payload_len]
         trailer = marshalled_bytes[payload_start + payload_len: payload_start + payload_len + 2]
         if trailer != b'N)':
-            raise DeobfuscationFailError(
-                'Malformed marshal payload, length does not match trailer',
-                severity='low',
-                status='expected',
-            )
+            raise DeobfuscationFailError('Malformed marshal payload, length does not match trailer')
         rtn_bytes.append(payload)
         current_idx = payload_start + payload_len + 2
     if len(rtn_bytes) > 1:
-        raise DeobfuscationFailError(
-            'Multiple payloads found in bytes',
-            severity='low',
-            status='expected',
-        )
+        raise DeobfuscationFailError('Multiple payloads found in bytes')
+    elif not rtn_bytes:
+        raise DeobfuscationFailError('No payload found')
     return rtn_bytes[0]
 
 

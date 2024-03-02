@@ -1,5 +1,6 @@
 import argparse
 from typing import Callable, NoReturn, TextIO, TypeVar
+import logging
 
 from .deobfuscators.hyperion import format_hyperion, deobf_hyperion
 from .deobfuscators.lzmaspam import format_lzma_b64, deobf_lzma_b64
@@ -28,7 +29,7 @@ def run_deobf(file: TextIO, deobf_type: str) -> NoReturn:
     deobf_type = deobf_type.replace('-', '_')
     deobf_type = alias_dict.get(deobf_type, deobf_type)
     if deobf_type not in supported_obfuscators:
-        raise InvalidSchemaError([*supported_obfuscators])
+        raise InvalidSchemaError
 
     deobf_func, format_func = supported_obfuscators[deobf_type]
     results = deobf_func(file)
@@ -47,12 +48,16 @@ def run():
         with open(args.path, 'r') as file:
             run_deobf(file, args.type)
     except FileNotFoundError:
-        print(f'{args.path} is not a valid path.')
-    except InvalidSchemaError as exc:
-        print(exc)
+        logging.error(f'{args.path} is not a valid path.')
+    except InvalidSchemaError:
+        logging.error(
+            f'Unsupported obfuscation schema.\n'
+            f'Supported obfuscation schemes include:\n'
+            f'{", ".join(supported_obfuscators)}'
+        )
     except DeobfuscationFailError as exc:
-        print(f'Deobfuscation of {args.path} with schema <{args.type}> failed:')
-        print(exc)
+        logging.error(f'Deobfuscation of {args.path} with schema <{args.type}> failed:')
+        logging.error(exc.msg)
 
 
 if __name__ == '__main__':
