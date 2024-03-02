@@ -25,6 +25,10 @@ alias_dict: dict[str, str] = {
 }
 
 
+logging.basicConfig(level='DEBUG')
+logger = logging.getLogger('deobf')
+
+
 def run_deobf(file: TextIO, deobf_type: str) -> NoReturn:
     deobf_type = deobf_type.replace('-', '_')
     deobf_type = alias_dict.get(deobf_type, deobf_type)
@@ -48,16 +52,16 @@ def run():
         with open(args.path, 'r') as file:
             run_deobf(file, args.type)
     except FileNotFoundError:
-        logging.error(f'{args.path} is not a valid path.')
+        logger.error(f'{args.path} is not a valid path.')
     except InvalidSchemaError:
-        logging.error(
+        logger.error(
             f'Unsupported obfuscation schema.\n'
             f'Supported obfuscation schemes include:\n'
             f'{", ".join(supported_obfuscators)}'
         )
     except DeobfuscationFailError as exc:
-        logging.error(f'Deobfuscation of {args.path} with schema <{args.type}> failed:')
-        logging.error(exc.msg)
+        logger.error(f'Deobfuscation of {args.path} with schema <{args.type}> failed:')
+        logger.error(exc.msg)
 
 
 if __name__ == '__main__':
