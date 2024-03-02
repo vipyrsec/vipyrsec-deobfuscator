@@ -11,6 +11,9 @@ from ..exceptions import DeobfuscationFailError
 from ..utils import BYTES_WEBHOOK_REGEX
 
 
+logger = logging.getLogger('deobf')
+
+
 class ByteStringFinder(ast.NodeVisitor):
     def __init__(self):
         self.results = []
@@ -21,7 +24,7 @@ class ByteStringFinder(ast.NodeVisitor):
 
 
 def nab_surface_payload(surface_code: str) -> bytes:
-    logging.info('Nabbing surface payload')
+    logger.info('Nabbing surface payload')
     try:
         tree = ast.parse(surface_code)
     # Other exceptions may appear, generalize this in the future
@@ -43,6 +46,8 @@ def deobf_obf(obf_bytes: bytes) -> bytes:
     """
     Deobfuscates the obf function as defined in not_pyobfuscate.md
     """
+    logger.info('Deobfuscating bytes')
+
     result = obf_bytes[::-1]
     try:
         try:
@@ -63,11 +68,12 @@ def nab_bytes(marshalled_bytes: bytes) -> bytes:
     Nabs the payload bytes from the marshalled code object
     Tries the shortcut with the hardcoded payload index first, and then tries regex
     """
+    logger.info('Nabbing bytes from marshalled data')
     try:
         return index_nab_bytes(marshalled_bytes)
     except DeobfuscationFailError:
         pass
-    # TODO: in the future, raise a warning if this happens
+    logger.warning('Index failed, using regex')
     return regex_nab_bytes(marshalled_bytes)
 
 
@@ -75,6 +81,7 @@ def index_nab_bytes(marshalled_bytes: bytes) -> bytes:
     """
     Uses the hardcoded index of 73 to grab the payload
     """
+    logger.info('Nabbing bytes from marshalled data via index')
     header = marshalled_bytes[73:79]
     if header[:2] != b'\x02s':
         raise DeobfuscationFailError('Bytes at index 73 is not header for bytes')
@@ -92,6 +99,7 @@ def regex_nab_bytes(marshalled_bytes: bytes) -> bytes:
     """
     Uses regex to grab the payload
     """
+    logger.info('Nabbing bytes from marshalled data via regex')
     # Keep track of the current idx, so we can discard '\x02s' headers when they appear within other strings
     current_idx = 0
     rtn_bytes = []
@@ -118,6 +126,7 @@ def deobf_fct(file: TextIO) -> bytes:
     Deobfuscates the not pyobfuscate schema
     :return: Marshalled code object of the source code
     """
+    logger.info('Deobfuscating FCT format')
     obf_bytes = nab_surface_payload(file.read())
     while True:
         marshalled_bytes = deobf_obf(obf_bytes)
@@ -130,6 +139,7 @@ def deobf_fct(file: TextIO) -> bytes:
 
 
 def format_fct(marshalled_bytes: bytes) -> str:
+    logging.info('Obfuscation complete, formatting output')
     webhooks = BYTES_WEBHOOK_REGEX.findall(marshalled_bytes)
     rtn_string = StringIO()
     rtn_string.write(f'Marshalled bytes:\n{marshalled_bytes!r}\n')
