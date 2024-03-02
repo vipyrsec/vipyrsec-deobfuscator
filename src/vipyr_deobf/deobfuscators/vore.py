@@ -13,7 +13,7 @@ from typing import TextIO
 
 from cryptography.fernet import Fernet
 
-from vipyr_deobf.utils import WEBHOOK_REGEX
+from ..utils import WEBHOOK_REGEX
 
 
 def deobf_vore(file: TextIO) -> str:
