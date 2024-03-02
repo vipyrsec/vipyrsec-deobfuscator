@@ -137,7 +137,7 @@ def regex_nab_bytes(marshalled_bytes: bytes) -> bytes:
     return rtn_bytes[0]
 
 
-def deobf_not_pyobfuscate(file: TextIO) -> bytes:
+def deobf_fct(file: TextIO) -> bytes:
     """
     Deobfuscates the not pyobfuscate schema
     :return: Marshalled code object of the source code
@@ -153,7 +153,7 @@ def deobf_not_pyobfuscate(file: TextIO) -> bytes:
             return marshalled_bytes
 
 
-def format_not_pyobfuscate(marshalled_bytes: bytes) -> str:
+def format_fct(marshalled_bytes: bytes) -> str:
     webhooks = BYTES_WEBHOOK_REGEX.findall(marshalled_bytes)
     rtn_string = StringIO()
     rtn_string.write(f'Marshalled bytes:\n{marshalled_bytes!r}\n')

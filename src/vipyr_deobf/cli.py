@@ -4,7 +4,7 @@ from typing import Callable, NoReturn, TextIO, TypeVar
 from .deobfuscators.hyperion import format_hyperion, deobf_hyperion
 from .deobfuscators.lzmaspam import format_lzma_b64, deobf_lzma_b64
 from .deobfuscators.vore import format_vore, deobf_vore
-from .deobfuscators.not_pyobfuscate import format_not_pyobfuscate, deobf_not_pyobfuscate
+from .deobfuscators.fct import format_fct, deobf_fct
 from .exceptions import DeobfuscationFailError, InvalidSchemaError
 
 R = TypeVar('R')
@@ -13,17 +13,19 @@ supported_obfuscators: dict[str, tuple[Callable[[TextIO], R], Callable[[R], str]
     'hyperion': (deobf_hyperion, format_hyperion),
     'lzmaspam': (deobf_lzma_b64, format_lzma_b64),
     'vore': (deobf_vore, format_vore),
-    'not_pyobfuscate': (deobf_not_pyobfuscate, format_not_pyobfuscate),
+    'fct': (deobf_fct, format_fct),
 }
 
 alias_dict: dict[str, str] = {
     'vare': 'vore',
     'hyperd': 'hyperion',
-    'fct-obfuscate': 'not_pyobfuscate',
+    'fct_obfuscate': 'fct',
+    'not_pyobfuscate': 'fct',
 }
 
 
 def run_deobf(file: TextIO, deobf_type: str) -> NoReturn:
+    deobf_type = deobf_type.replace('-', '_')
     deobf_type = alias_dict.get(deobf_type, deobf_type)
     if deobf_type not in supported_obfuscators:
         raise InvalidSchemaError([*supported_obfuscators])
