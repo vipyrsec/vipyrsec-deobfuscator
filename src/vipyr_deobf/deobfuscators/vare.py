@@ -16,7 +16,7 @@ from cryptography.fernet import Fernet
 from ..utils import WEBHOOK_REGEX
 
 
-def deobf_vore(file: TextIO) -> str:
+def deobf_vare(file: TextIO) -> str:
     """
     Extracts the entire source code from code
     """
@@ -33,7 +33,7 @@ def deobf_vore(file: TextIO) -> str:
     ).decode()
 
 
-def format_vore(result: str) -> str:
+def format_vare(result: str) -> str:
     return result + '\n\n' + '\n'.join(re.findall(WEBHOOK_REGEX, result))
 
 
