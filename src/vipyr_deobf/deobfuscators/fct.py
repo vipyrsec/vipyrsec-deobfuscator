@@ -1,15 +1,14 @@
 import ast
 import base64
 import binascii
+import logging
 import re
 import zlib
 from io import StringIO
 from typing import TextIO
-import logging
 
 from ..exceptions import DeobfuscationFailError
 from ..utils import BYTES_WEBHOOK_REGEX
-
 
 logger = logging.getLogger('deobf')
 

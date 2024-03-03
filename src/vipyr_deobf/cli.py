@@ -1,12 +1,12 @@
 import argparse
-from typing import Callable, NoReturn, TextIO, TypeVar, override
 import logging
 import logging.config
+from typing import Callable, NoReturn, TextIO, TypeVar, override
 
-from .deobfuscators.hyperion import format_hyperion, deobf_hyperion
-from .deobfuscators.lzmaspam import format_lzma_b64, deobf_lzma_b64
-from .deobfuscators.vore import format_vore, deobf_vore
-from .deobfuscators.fct import format_fct, deobf_fct
+from .deobfuscators.fct import deobf_fct, format_fct
+from .deobfuscators.hyperion import deobf_hyperion, format_hyperion
+from .deobfuscators.lzmaspam import deobf_lzma_b64, format_lzma_b64
+from .deobfuscators.vore import deobf_vore, format_vore
 from .exceptions import DeobfuscationFailError, InvalidSchemaError
 
 R = TypeVar('R')
