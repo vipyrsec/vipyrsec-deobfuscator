@@ -6,7 +6,7 @@ from typing import Callable, NoReturn, TextIO, TypeVar, override
 from .deobfuscators.fct import deobf_fct, format_fct
 from .deobfuscators.hyperion import deobf_hyperion, format_hyperion
 from .deobfuscators.lzmaspam import deobf_lzma_b64, format_lzma_b64
-from .deobfuscators.vore import deobf_vore, format_vore
+from .deobfuscators.vare import deobf_vare, format_vare
 from .exceptions import DeobfuscationFailError, InvalidSchemaError
 
 R = TypeVar('R')
@@ -14,12 +14,12 @@ R = TypeVar('R')
 supported_obfuscators: dict[str, tuple[Callable[[TextIO], R], Callable[[R], str]]] = {
     'hyperion': (deobf_hyperion, format_hyperion),
     'lzmaspam': (deobf_lzma_b64, format_lzma_b64),
-    'vore': (deobf_vore, format_vore),
+    'vore': (deobf_vare, format_vare),
     'fct': (deobf_fct, format_fct),
 }
 
 alias_dict: dict[str, str] = {
-    'vare': 'vore',
+    'vore': 'vare',
     'hyperd': 'hyperion',
     'fct_obfuscate': 'fct',
     'not_pyobfuscate': 'fct',
