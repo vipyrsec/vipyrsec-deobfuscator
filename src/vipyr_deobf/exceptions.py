@@ -14,13 +14,10 @@ class DeobfuscationFailError(Error):
     """
     A generic exception for when deobfuscation fails
     """
-    def __init__(self, msg: str, exc: Exception | None = None, data: dict[str, Any] = None):
+    def __init__(self, **env_vars):
         """
         Deobfuscation Failure
-        :param msg: A string with details on the cause of the exception
-        :param exc: An optional exception object containing the exception that was raised
+        :param env_vars: Relevant environment variables for debugging
         """
-        self.msg = msg
-        self.exc = exc
-        self.data = data
+        self.env_vars = env_vars
         super().__init__()
