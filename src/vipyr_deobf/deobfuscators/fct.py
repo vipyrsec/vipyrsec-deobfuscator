@@ -161,7 +161,7 @@ def deobf_fct(file: TextIO) -> bytes:
             return marshalled_bytes
         if not obf_bytes:
             return marshalled_bytes
-    logging.warning('Reached byte deobfuscation limit of 100, ending now')
+    logging.warning(f'Reached byte deobfuscation limit of {MAX_DEOBF_LIMIT}, ending now')
     raise DeobfuscationFailError(
         marshalled_bytes = marshalled_bytes
     )
