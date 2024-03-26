@@ -66,11 +66,11 @@ class HyperionB64zlibBytes(ast.NodeTransformer):
                 return node
 
 
-def deobf_hyperion(file: TextIO) -> list[str]:
+def deobf_hyperion(code: str) -> list[str]:
     """
     Extracts all strings containing 'https' from the code
     """
-    no_frosting = ast.unparse(HyperionB64zlibBytes().visit(ast.parse(file.read())))
+    no_frosting = ast.unparse(HyperionB64zlibBytes().visit(ast.parse(code)))
     code = zlib.decompress(
         b''.join(
             ast.literal_eval(byte_string)

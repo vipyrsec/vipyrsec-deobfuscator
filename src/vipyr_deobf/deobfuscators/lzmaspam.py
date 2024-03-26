@@ -18,7 +18,7 @@ from typing import TextIO
 from ..utils import WEBHOOK_REGEX
 
 
-def deobf_lzma_b64(file: TextIO) -> re.Match:
+def deobf_lzma_b64(code: str) -> re.Match:
     """
     Extracts webhook from code
     """
@@ -28,7 +28,7 @@ def deobf_lzma_b64(file: TextIO) -> re.Match:
                 r"(b'.+?')\n",
                 lzma.decompress(base64.b64decode(
                     ast.literal_eval(
-                        re.search(r"b'.+?'", file.read()).group(0)
+                        re.search(r"b'.+?'", code).group(0)
                     )
                 )).decode()
             ).group(1)
