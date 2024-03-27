@@ -1,12 +1,11 @@
-import ast
 import base64
 import re
 
 WEBHOOK_REGEX = re.compile(
-    r'https?://(ptb\.|canary\.)?discord(app)?\.com/api(/v\d{1,2})?/webhooks/(\d{17,21})/([\w-]{68})'
+    r'https?://(?:ptb\.|canary\.)?discord(?:app)?\.com/api(?:/v\d{1,2})?/webhooks/\d{17,21}/[\w-]{68}'
 )
 BYTES_WEBHOOK_REGEX = re.compile(
-    br'https?://(ptb\.|canary\.)?discord(app)?\.com/api(/v\d{1,2})?/webhooks/(\d{17,21})/([\w-]{68})'
+    br'https?://(?:ptb\.|canary\.)?discord(?:app)?\.com/api(?:/v\d{1,2})?/webhooks/\d{17,21}/[\w-]{68}'
 )
 
 

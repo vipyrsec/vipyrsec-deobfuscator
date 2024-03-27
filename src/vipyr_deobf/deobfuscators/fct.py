@@ -5,7 +5,6 @@ import logging
 import re
 import zlib
 from io import StringIO
-from typing import TextIO
 
 from ..exceptions import DeobfuscationFailError
 from ..utils import BYTES_WEBHOOK_REGEX
@@ -139,13 +138,13 @@ def regex_nab_bytes(marshalled_bytes: bytes) -> bytes:
     return rtn_bytes[0]
 
 
-def deobf_fct(file: TextIO) -> bytes:
+def deobf_fct(code: str) -> bytes:
     """
     Deobfuscates the not pyobfuscate schema
     :return: Marshalled code object of the source code
     """
     logger.info('Deobfuscating FCT format')
-    obf_bytes = nab_surface_payload(file.read())
+    obf_bytes = nab_surface_payload(code)
 
     for iteration in range(MAX_DEOBF_LIMIT):
         logger.info(f'Deobfuscating bytes (iteration {iteration})')
