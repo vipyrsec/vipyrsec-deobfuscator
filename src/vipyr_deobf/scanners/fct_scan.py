@@ -1,6 +1,39 @@
 import ast
-from ast import (Assign, Attribute, Call, Constant, Expr, Lambda, Load, Name,
-                 Slice, Store, Subscript, UnaryOp, USub, arg, arguments)
+from ast import (Assign, Attribute, Call, Constant, Expr, Lambda, Name,
+                 Slice, Subscript, UnaryOp, USub, arg, arguments)
+
+
+def match_inner_underscore_function(node: ast.Call):
+    match node:
+        case Call(
+            func=Attribute(
+                value=Call(
+                    func=Name(id='__import__'),
+                    args=[Constant(value='zlib')]
+                ),
+                attr='decompress',
+            ),
+            args=[
+                Call(
+                    func=Attribute(
+                        value=Call(
+                            func=Name(id='__import__'),
+                            args=[Constant(value='base64')]
+                        ),
+                        attr='b64decode',
+                    ),
+                    args=[
+                        Subscript(
+                            value=Name(id='__'),
+                            slice=Slice(
+                                step=UnaryOp(op=USub(), operand=Constant(value=1))),
+                        )
+                    ]
+                )
+            ]
+        ):
+            return True
+    return False
 
 
 class FCTScanner(ast.NodeVisitor):
@@ -11,44 +44,21 @@ class FCTScanner(ast.NodeVisitor):
     def visit_Assign(self, node):
         match node:
             case Assign(
-                targets=[
-                    Name(id='_', ctx=Store())],
+                targets=[Name(id='_')],
                 value=Lambda(
-                    args=arguments(
-                        args=[
-                            arg(arg='__')],
-                        kwonlyargs=[],
-                        kw_defaults=[],
-                        defaults=[]),
+                    args=arguments(args=[arg(arg='__')]),
                     body=Call(
                         func=Attribute(
                             value=Call(
-                                func=Name(id='__import__', ctx=Load()),
-                                args=[
-                                    Constant(value='zlib')],
-                                keywords=[]),
-                            attr='decompress',
-                            ctx=Load()),
-                        args=[
-                            Call(
-                                func=Attribute(
-                                    value=Call(
-                                        func=Name(id='__import__', ctx=Load()),
-                                        args=[
-                                            Constant(value='base64')],
-                                        keywords=[]),
-                                    attr='b64decode',
-                                    ctx=Load()),
-                                args=[
-                                    Subscript(
-                                        value=Name(id='__', ctx=Load()),
-                                        slice=Slice(
-                                            step=UnaryOp(
-                                                op=USub(),
-                                                operand=Constant(value=1))),
-                                        ctx=Load())],
-                                keywords=[])],
-                        keywords=[]))):
+                                func=Name(id='__import__'),
+                                args=[Constant(value='marshal')]
+                            ),
+                            attr='loads',
+                        ),
+                        args=[body]
+                    ) | body
+                )
+            ) if match_inner_underscore_function(body):
                 self.underscore_function_found = True
                 return
 
@@ -56,14 +66,15 @@ class FCTScanner(ast.NodeVisitor):
         match node:
             case Expr(
                 value=Call(
-                    func=Name(id='exec', ctx=Load()),
+                    func=Name(id='exec'),
                     args=[
                         Call(
-                            func=Name(id='_', ctx=Load()),
-                            args=[
-                                Constant(value=payload)],
-                            keywords=[])],
-                    keywords=[])) if isinstance(payload, bytes):
+                            func=Name(id='_'),
+                            args=[Constant(value=payload)]
+                        )
+                    ]
+                )
+            ) if isinstance(payload, bytes):
                 self.payload_found = True
                 return
 

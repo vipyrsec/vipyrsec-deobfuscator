@@ -13,7 +13,6 @@ import base64
 import codecs
 import lzma
 import re
-from typing import TextIO
 
 from ..utils import WEBHOOK_REGEX
 

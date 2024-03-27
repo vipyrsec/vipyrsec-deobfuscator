@@ -20,7 +20,6 @@ import binascii
 import re
 import zlib
 from ast import *
-from typing import TextIO
 
 from ..utils import WEBHOOK_REGEX
 

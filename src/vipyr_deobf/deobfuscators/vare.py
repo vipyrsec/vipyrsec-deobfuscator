@@ -9,7 +9,6 @@ import base64
 import marshal
 import re
 import zlib
-from typing import TextIO
 
 from cryptography.fernet import Fernet
 
