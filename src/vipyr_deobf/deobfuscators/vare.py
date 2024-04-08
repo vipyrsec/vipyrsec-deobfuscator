@@ -9,18 +9,16 @@ import base64
 import marshal
 import re
 import zlib
-from typing import TextIO
 
 from cryptography.fernet import Fernet
 
 from ..utils import WEBHOOK_REGEX
 
 
-def deobf_vare(file: TextIO) -> str:
+def deobf_vare(code: str) -> str:
     """
     Extracts the entire source code from code
     """
-    code = file.read()
     key = ast.literal_eval(re.search(r'__mikey__\s*=\s*(([\'"]).+\2);mydata', code).group(1))
     data = ast.literal_eval(re.search(r'mydata\s*=\s*(([\'"]).+\2)', code).group(1))
     fernet = Fernet(base64.b64decode(key))
