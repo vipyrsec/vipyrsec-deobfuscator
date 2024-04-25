@@ -100,7 +100,7 @@ def run():
         prog='Vipyr Deobfuscator',
         description='Deobfuscates obfuscated scripts',
     )
-    parser.add_argument('-p', '--path', required=True, help='path to obfuscated file')
+    parser.add_argument('path', help='path to obfuscated file')
     parser.add_argument('-t', '--type', default='auto', help='type of obfuscation used')
     parser.add_argument('-d', '--debug', action='store_true', help='display debug logs (defaults to false)')
     parser.add_argument('-s', '--soft', action='store_true', help='display expected warnings (defaults to false)')
