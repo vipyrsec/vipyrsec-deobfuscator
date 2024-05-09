@@ -1,13 +1,13 @@
 import argparse
 import logging
 import logging.config
-from typing import Callable, NoReturn, TypeVar, override
+from typing import Callable, TypeVar, override
 
 from .deobfuscators.fct import deobf_fct, format_fct
 from .deobfuscators.hyperion import deobf_hyperion, format_hyperion
 from .deobfuscators.lzmaspam import deobf_lzma_b64, format_lzma_b64
 from .deobfuscators.vare import deobf_vare, format_vare
-from .exceptions import DeobfuscationFailError, InvalidSchemaError
+from .exceptions import DeobfuscationFailError
 from .scanners.fct_scan import scan_fct
 from .scanners.hyperion_scan import scan_hyperion
 from .scanners.lzmaspam_scan import scan_lzma
@@ -57,10 +57,10 @@ class NoSoftWarning(logging.Filter):
         return not record.msg.endswith('(Expected)')
 
 
-def run_deobf(code: str, deobf_type: str) -> NoReturn:
+def run_deobf(code: str, deobf_type: str) -> str:
     deobf_func, format_func = supported_obfuscators[deobf_type]
     results = deobf_func(code)
-    print(format_func(results))
+    return format_func(results)
 
 
 def setup_logging(args: argparse.Namespace):
@@ -102,6 +102,7 @@ def run():
     )
     parser.add_argument('path', help='path to obfuscated file')
     parser.add_argument('-t', '--type', default='auto', help='type of obfuscation used')
+    parser.add_argument('-o', '--output', help='file to output deobf result to, defaults to stdin')
     parser.add_argument('-d', '--debug', action='store_true', help='display debug logs (defaults to false)')
     parser.add_argument('-s', '--soft', action='store_true', help='display expected warnings (defaults to false)')
     args = parser.parse_args()
@@ -141,11 +142,18 @@ def run():
     for schema in schemas:
         try:
             logger.info(f'Running deobf of {args.path} with schema <{schema}>')
-            run_deobf(data, schema)
+            output = run_deobf(data, schema)
         except DeobfuscationFailError as exc:
             logger.exception(f'Deobfuscation of {args.path} with schema <{schema}> failed:')
             for var, data in exc.env_vars.items():
                 print(f'{Color.bold_red}{var}{Color.clear}', data, sep='\n', end='\n\n')
+        else:
+            if args.output is None:
+                print(output)
+            else:
+                logger.info(f'Writing results of deobf to file {args.output}')
+                with open(args.output, 'w') as file:
+                    file.write(output)
 
 
 if __name__ == '__main__':
