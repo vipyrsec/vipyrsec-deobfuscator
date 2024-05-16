@@ -126,7 +126,7 @@ def run():
         if not schemas:
             logger.error('Could not identify obfuscation schema')
             return
-        logger.info(f'Schemas matched: {', '.join(schemas)}')
+        logger.info(f'Schemas matched: {", ".join(schemas)}')
     else:
         deobf_type = args.type.replace('-', '_')
         deobf_type = alias_dict.get(deobf_type, deobf_type)
