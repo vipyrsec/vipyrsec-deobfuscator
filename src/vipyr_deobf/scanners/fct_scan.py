@@ -1,6 +1,6 @@
 import ast
-from ast import (Assign, Attribute, Call, Constant, Expr, Lambda, Name,
-                 Slice, Subscript, UnaryOp, USub, arg, arguments)
+from ast import (Assign, Attribute, Call, Constant, Expr, Lambda, Name, Slice,
+                 Subscript, UnaryOp, USub, arg, arguments)
 
 
 def match_inner_underscore_function(node: ast.Call):

@@ -3,11 +3,13 @@ import logging
 import logging.config
 from typing import Callable, TypeVar, override
 
+from .deobfuscators.blankobf2 import deobf_blankobf2, format_blankobf2
 from .deobfuscators.fct import deobf_fct, format_fct
 from .deobfuscators.hyperion import deobf_hyperion, format_hyperion
 from .deobfuscators.lzmaspam import deobf_lzma_b64, format_lzma_b64
 from .deobfuscators.vare import deobf_vare, format_vare
 from .exceptions import DeobfuscationFailError
+from .scanners.blankobf2_scan import scan_blankobf2
 from .scanners.fct_scan import scan_fct
 from .scanners.hyperion_scan import scan_hyperion
 from .scanners.lzmaspam_scan import scan_lzma
@@ -20,6 +22,7 @@ supported_obfuscators: dict[str, tuple[Callable[[str], R], Callable[[R], str]]] 
     'lzmaspam': (deobf_lzma_b64, format_lzma_b64),
     'vare': (deobf_vare, format_vare),
     'fct': (deobf_fct, format_fct),
+    'blankobf2': (deobf_blankobf2, format_blankobf2),
 }
 
 scanners: dict[str, Callable[[str], bool]] = {
@@ -27,6 +30,7 @@ scanners: dict[str, Callable[[str], bool]] = {
     'lzmaspam': scan_lzma,
     'vare': scan_vare,
     'fct': scan_fct,
+    'blankobf2': scan_blankobf2,
 }
 
 alias_dict: dict[str, str] = {
@@ -34,6 +38,7 @@ alias_dict: dict[str, str] = {
     'hyperd': 'hyperion',
     'fct_obfuscate': 'fct',
     'not_pyobfuscate': 'fct',
+    'blankobfv2': 'blankobf2',
 }
 
 
@@ -60,7 +65,7 @@ class NoSoftWarning(logging.Filter):
 def run_deobf(code: str, deobf_type: str) -> str:
     deobf_func, format_func = supported_obfuscators[deobf_type]
     results = deobf_func(code)
-    return format_func(results)
+    return format_func(*results) if isinstance(results, tuple) else format_func(results)
 
 
 def setup_logging(args: argparse.Namespace):

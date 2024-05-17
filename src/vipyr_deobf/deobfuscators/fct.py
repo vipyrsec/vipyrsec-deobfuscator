@@ -184,6 +184,6 @@ def format_fct(marshalled_bytes: bytes) -> str:
     if webhooks:
         logger.info('Webhooks found:')
         for webhook in webhooks:
-            logger.info(f'{webhook.decode()}\n')
+            logger.info(f'{webhook.decode()}')
 
     return rtn_string.getvalue()
