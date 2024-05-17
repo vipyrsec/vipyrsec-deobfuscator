@@ -1,5 +1,8 @@
+import ast
 import base64
+import operator
 import re
+import zlib
 
 WEBHOOK_REGEX = re.compile(
     r'https?://(?:ptb\.|canary\.)?discord(?:app)?\.com/api(?:/v\d{1,2})?/webhooks/\d{17,21}/[\w-]{68}'
@@ -9,14 +12,28 @@ BYTES_WEBHOOK_REGEX = re.compile(
 )
 
 
-def unwrap_base64_b64decode(inp_string):
-    """
-    Decodes a common pattern in lzma spam
-    """
-    return re.sub(
-        r'getattr\(__import__\(bytes\(\[98, 97, 115, 101, 54, 52]\)\.decode\(\)\), '
-        r'bytes\(\[98, 54, 52, 100, 101, 99, 111, 100, 101]\)'
-        r'\.decode\(\)\)\(bytes\(\[(\d+(?:, \d+)*)]\)\)\.decode\(\)',
-        lambda s: f"'{base64.b64decode(bytes(map(int, s.group(1).split(', ')))).decode()}'",
-        inp_string
-    )
+known_funcs = {
+    ('base64', 'b64decode'): base64.b64decode,
+    ('zlib', 'decompress'): zlib.decompress,
+}
+
+op_dict = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.FloorDiv: operator.floordiv,
+    ast.Mod: operator.mod,
+    ast.Pow: operator.pow,
+    ast.LShift: operator.lshift,
+    ast.RShift: operator.rshift,
+    ast.BitOr: operator.or_,
+    ast.BitXor: operator.xor,
+    ast.BitAnd: operator.and_,
+    ast.MatMult: operator.matmul,
+
+    ast.UAdd: operator.pos,
+    ast.USub: operator.neg,
+    ast.Not: operator.not_,
+    ast.Invert: operator.invert,
+}
