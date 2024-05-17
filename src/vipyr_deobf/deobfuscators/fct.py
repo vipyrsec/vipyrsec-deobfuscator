@@ -176,14 +176,14 @@ def format_fct(marshalled_bytes: bytes) -> str:
         output = marshalled_bytes.decode()
     except UnicodeDecodeError:
         logger.info('Output appears to be marshalled')
-        rtn_string.write(f'Marshalled bytes:\n{marshalled_bytes!r}\n')
+        rtn_string.write(repr(marshalled_bytes))
     else:
         logger.info('Output appears to be normal python')
-        rtn_string.write(f'Output:\n{output}')
+        rtn_string.write(output)
 
     if webhooks:
-        rtn_string.write('\nWebhooks found:\n')
+        logger.info('Webhooks found:')
         for webhook in webhooks:
-            rtn_string.write(f'{webhook.decode()}\n')
+            logger.info(f'{webhook.decode()}\n')
 
     return rtn_string.getvalue()
