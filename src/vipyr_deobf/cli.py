@@ -7,12 +7,14 @@ from .deobfuscators.blankobf2 import deobf_blankobf2, format_blankobf2
 from .deobfuscators.fct import deobf_fct, format_fct
 from .deobfuscators.hyperion import deobf_hyperion, format_hyperion
 from .deobfuscators.lzmaspam import deobf_lzma_b64, format_lzma_b64
+from .deobfuscators.pyobfuscate import deobf_pyobfuscate, format_pyobfuscate
 from .deobfuscators.vare import deobf_vare, format_vare
 from .exceptions import DeobfuscationFailError
 from .scanners.blankobf2_scan import scan_blankobf2
 from .scanners.fct_scan import scan_fct
 from .scanners.hyperion_scan import scan_hyperion
 from .scanners.lzmaspam_scan import scan_lzma
+from .scanners.pyobfuscate_scan import scan_pyobfuscate
 from .scanners.vare_scan import scan_vare
 
 R = TypeVar('R')
@@ -23,6 +25,7 @@ supported_obfuscators: dict[str, tuple[Callable[[str], R], Callable[[R], str]]] 
     'vare': (deobf_vare, format_vare),
     'fct': (deobf_fct, format_fct),
     'blankobf2': (deobf_blankobf2, format_blankobf2),
+    'pyobfuscate': (deobf_pyobfuscate, format_pyobfuscate),
 }
 
 scanners: dict[str, Callable[[str], bool]] = {
@@ -31,6 +34,7 @@ scanners: dict[str, Callable[[str], bool]] = {
     'vare': scan_vare,
     'fct': scan_fct,
     'blankobf2': scan_blankobf2,
+    'pyobfuscate': scan_pyobfuscate,
 }
 
 alias_dict: dict[str, str] = {
