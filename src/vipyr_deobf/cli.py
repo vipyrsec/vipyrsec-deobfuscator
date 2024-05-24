@@ -92,7 +92,7 @@ def setup_logging(args: argparse.Namespace):
             }
         },
         'filters': {
-            'no_soft_warning': {'()': 'src.vipyr_deobf.cli.NoSoftWarning'}
+            'no_soft_warning': {'()': 'vipyr_deobf.cli.NoSoftWarning'}
         },
         'loggers': {
             'root': {
