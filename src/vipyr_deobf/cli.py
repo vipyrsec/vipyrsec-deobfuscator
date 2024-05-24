@@ -1,7 +1,7 @@
 import argparse
 import logging
 import logging.config
-from typing import Callable, TypeVar, override
+from typing import Callable, TypeVar
 
 from .deobfuscators.blankobf2 import deobf_blankobf2, format_blankobf2
 from .deobfuscators.fct import deobf_fct, format_fct
@@ -61,7 +61,6 @@ class Color:
 
 
 class NoSoftWarning(logging.Filter):
-    @override
     def filter(self, record: logging.LogRecord) -> bool:
         return not record.msg.endswith('(Expected)')
 
