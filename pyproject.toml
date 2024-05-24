@@ -8,8 +8,8 @@ authors = [
 ]
 license = { text = "MIT" }
 dependencies = [
-    # deobfuscators/vore
     "cryptography",
+    "pycryptodome",
 ]
 
 [project.urls]
