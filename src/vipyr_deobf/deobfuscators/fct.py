@@ -123,7 +123,6 @@ def regex_nab_bytes(marshalled_bytes: bytes) -> bytes:
             )
         rtn_bytes.append(payload)
         current_idx = payload_start + payload_len + 2
-    rtn_bytes = [1, 2, 3]
     if len(rtn_bytes) > 1:
         logger.error('Multiple payloads found in bytes (Expected)')
         raise DeobfuscationFailError(
