@@ -112,7 +112,7 @@ def run():
     )
     parser.add_argument('path', help='path to obfuscated file')
     parser.add_argument('-t', '--type', default='auto', type=str,
-                        choices=list(supported_obfuscators.keys()).append('auto'),
+                        choices=list(supported_obfuscators.keys())+['auto'],
                         help='type of obfuscation used (defaults to auto)')
     parser.add_argument('-o', '--output', help='file to output deobf result to, defaults to stdout')
     parser.add_argument('-d', '--debug', action='store_true', help='display debug logs (defaults to false)')
