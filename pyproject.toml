@@ -12,6 +12,9 @@ dependencies = [
     "pycryptodome",
 ]
 
+[project.optional-dependencies]
+argcomplete = ["argcomplete"]
+
 [project.urls]
 repository = "https://github.com/vipyrsec/vipyrsec-deobfuscator/"
 
