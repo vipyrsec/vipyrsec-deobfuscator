@@ -3,7 +3,10 @@
 ## Installation
 
 ```bash
+# Without argcomplete support
 pip install git+https://github.com/vipyrsec/vipyrsec-deobfuscator.git
+# With argcomplete support
+pip install "vipyr-deobf[argcomplete] @ git+https://github.com/vipyrsec/vipyrsec-deobfuscator.git"
 ```
 
 ## Supported Obfuscation Types

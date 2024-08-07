@@ -1,6 +1,8 @@
+# PYTHON_ARGCOMPLETE_OK
 import argparse
 import logging
 import logging.config
+import importlib.util
 from typing import Callable, TypeVar
 
 from .deobfuscators.blankobf2 import deobf_blankobf2, format_blankobf2
@@ -109,10 +111,15 @@ def run():
         description='Deobfuscates obfuscated scripts',
     )
     parser.add_argument('path', help='path to obfuscated file')
-    parser.add_argument('-t', '--type', default='auto', help='type of obfuscation used (defaults to auto)')
+    parser.add_argument('-t', '--type', default='auto', type=str,
+                        choices=list(supported_obfuscators.keys()).append('auto'),
+                        help='type of obfuscation used (defaults to auto)')
     parser.add_argument('-o', '--output', help='file to output deobf result to, defaults to stdout')
     parser.add_argument('-d', '--debug', action='store_true', help='display debug logs (defaults to false)')
     parser.add_argument('-s', '--soft', action='store_true', help='display expected warnings (defaults to false)')
+    if importlib.util.find_spec('argcomplete') is not None:
+        import argcomplete
+        argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     logger = logging.getLogger('deobf')
