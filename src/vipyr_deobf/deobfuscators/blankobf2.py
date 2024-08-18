@@ -6,7 +6,7 @@ from ast import (Assign, Attribute, BinOp, BitXor, Break, Call, Compare,
                  Constant, Eq, Expr, For, If, ListComp, Module, Name, Slice,
                  Subscript, UnaryOp, comprehension, operator, unaryop)
 
-from ..utils import WEBHOOK_REGEX, known_funcs, op_dict
+from ..deobf_utils import WEBHOOK_REGEX, known_funcs, op_dict
 
 logger = logging.getLogger('deobf')
 MAX_DEOBF_LIMIT = 30

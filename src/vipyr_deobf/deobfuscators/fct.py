@@ -7,7 +7,7 @@ import zlib
 from io import StringIO
 
 from ..exceptions import DeobfuscationFailError
-from ..utils import BYTES_WEBHOOK_REGEX
+from ..deobf_utils import BYTES_WEBHOOK_REGEX
 
 logger = logging.getLogger('deobf')
 

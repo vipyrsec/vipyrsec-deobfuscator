@@ -12,7 +12,7 @@ import zlib
 
 from cryptography.fernet import Fernet
 
-from ..utils import WEBHOOK_REGEX
+from ..deobf_utils import WEBHOOK_REGEX
 
 
 def deobf_vare(code: str) -> str:

@@ -21,7 +21,7 @@ import re
 import zlib
 from ast import *
 
-from ..utils import WEBHOOK_REGEX
+from ..deobf_utils import WEBHOOK_REGEX
 
 
 class HyperionB64zlibBytes(ast.NodeTransformer):

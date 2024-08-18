@@ -7,7 +7,7 @@ from ast import Assign, Attribute, Call, Constant, Dict, Lambda, Name, keyword
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
-from ..utils import WEBHOOK_REGEX
+from ..deobf_utils import WEBHOOK_REGEX
 
 logger = logging.getLogger('deobf')
 

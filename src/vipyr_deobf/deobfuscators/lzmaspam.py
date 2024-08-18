@@ -14,7 +14,7 @@ import codecs
 import lzma
 import re
 
-from ..utils import WEBHOOK_REGEX
+from ..deobf_utils import WEBHOOK_REGEX
 
 
 def deobf_lzma_b64(code: str) -> re.Match:
