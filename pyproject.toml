@@ -13,6 +13,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+test = ["pytest"]
 argcomplete = ["argcomplete"]
 
 [project.urls]
