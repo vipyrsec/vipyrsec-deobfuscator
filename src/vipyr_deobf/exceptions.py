@@ -17,3 +17,7 @@ class DeobfuscationFailError(Error):
         """
         self.env_vars = env_vars
         super().__init__()
+
+
+class DeobfLoadingError(Error):
+    pass
