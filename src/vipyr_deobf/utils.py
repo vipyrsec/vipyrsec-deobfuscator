@@ -1,6 +1,6 @@
+import argparse
 import logging
 import logging.config
-import argparse
 
 
 class Color:
@@ -38,7 +38,7 @@ def setup_logging(args: argparse.Namespace):
                 'class': 'logging.StreamHandler',
                 'formatter': 'default',
                 'stream': 'ext://sys.stdout',
-                'filters': [] if args.soft else ['no_soft_warning']
+                'filters': [] if args.show_expected else ['no_soft_warning']
             }
         },
         'filters': {
