@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest"]
+dev = ["pytest", "isort"]
 argcomplete = ["argcomplete"]
 
 [project.urls]
@@ -25,3 +25,7 @@ vipyr-deobf = "vipyr_deobf.cli:run"
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.isort]
+multi_line_output = 5
+balanced_wrapping = true
