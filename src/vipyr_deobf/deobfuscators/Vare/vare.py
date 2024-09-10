@@ -12,10 +12,11 @@ import zlib
 
 from cryptography.fernet import Fernet
 
-from ..deobf_utils import WEBHOOK_REGEX
+from vipyr_deobf.deobf_base import Deobfuscator, register
+from vipyr_deobf.deobf_utils import WEBHOOK_REGEX
 
 
-def deobf_vare(code: str) -> str:
+def deobf(code: str) -> str:
     """
     Extracts the entire source code from code
     """
@@ -31,9 +32,24 @@ def deobf_vare(code: str) -> str:
     ).decode()
 
 
-def format_vare(result: str) -> str:
+def format_results(result: str) -> str:
     return result + '\n\n' + '\n'.join(re.findall(WEBHOOK_REGEX, result))
 
 
-if __name__ == '__main__':
-    pass
+VARE_NAME_REGEX = re.compile(r'__VareObfuscator__')
+SAINT_REGEX = re.compile(r'def saint\d+\(\):')
+MIKEY_REGEX = re.compile(r'__mikey__')
+
+
+def scan(code: str):
+    return any(
+        pattern.search(code)
+        for pattern in (
+            VARE_NAME_REGEX,
+            SAINT_REGEX,
+            MIKEY_REGEX,
+        )
+    )
+
+vare_deobf = Deobfuscator(deobf, format_results, scan)
+register(vare_deobf)

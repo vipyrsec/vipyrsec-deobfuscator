@@ -2,11 +2,14 @@ import ast
 import logging
 import re
 import zlib
-from ast import (Assign, Attribute, BinOp, BitXor, Break, Call, Compare,
-                 Constant, Eq, Expr, For, If, ListComp, Module, Name, Slice,
-                 Subscript, UnaryOp, comprehension, operator, unaryop)
+from ast import (
+    Assign, Attribute, BinOp, BitXor, Break, Call, Compare, Constant,
+    Eq, Expr, For, If, Import, ImportFrom, ListComp, Module, Name,
+    Slice, Subscript, UnaryOp, comprehension, operator, unaryop
+)
 
-from ..deobf_utils import WEBHOOK_REGEX, known_funcs, op_dict
+from vipyr_deobf.deobf_base import Deobfuscator, register
+from vipyr_deobf.deobf_utils import WEBHOOK_REGEX, known_funcs, op_dict
 
 logger = logging.getLogger('deobf')
 MAX_DEOBF_LIMIT = 30
@@ -226,8 +229,7 @@ def deobf_third_layer(tree: ast.Module):
             return ast.parse(payload)
 
 
-def deobf_blankobf2(code: str) -> tuple[bool, ast.Module]:
-    logger.info('Deobfuscating BlankObf2 format')
+def deobf(code: str) -> tuple[bool, ast.Module]:
     tree = ast.parse(code)
 
     logger.info('Removing imports')
@@ -266,7 +268,8 @@ def deobf_blankobf2(code: str) -> tuple[bool, ast.Module]:
     return True, tree
 
 
-def format_blankobf2(status: bool, tree: ast.Module) -> str:
+def format_results(results: tuple[bool, ast.Module]) -> str:
+    status, tree = results
     if not status:
         logger.error('Code could not be fully deobfuscated: Attempting to return partial results now')
         return ast.unparse(tree)
@@ -279,3 +282,28 @@ def format_blankobf2(status: bool, tree: ast.Module) -> str:
         for webhook in webhooks:
             logger.info(f'{webhook}')
     return deobfed_code
+
+
+def scan(code: str):
+    tree = ast.parse(code)
+    match tree:
+        case Module(
+            body=[
+                *imports,
+                Assign(),
+                Assign(),
+                Assign(),
+                Assign(),
+                Expr(),
+            ]
+        ) if all(isinstance(imp, Import | ImportFrom) for imp in imports):
+            return True
+        case Module(
+            body=[Assign(), For(body=If(body=[Expr(), Break()]))]
+        ):
+            return True
+    return False
+
+
+blankobf_v2_deobf = Deobfuscator(deobf, format_results, scan)
+register(blankobf_v2_deobf)
