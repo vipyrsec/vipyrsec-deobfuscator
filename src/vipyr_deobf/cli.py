@@ -3,7 +3,9 @@ import argparse
 import importlib.util
 import logging
 
-from vipyr_deobf.deobf_base import iter_deobfs, load_all_deobfs, load_deobfs
+from vipyr_deobf.deobf_base import (
+    get_available_deobfs, iter_deobfs, load_all_deobfs, load_deobfs
+)
 from vipyr_deobf.exceptions import DeobfuscationFailError
 from vipyr_deobf.utils import Color, setup_logging
 
@@ -12,11 +14,17 @@ def get_parser():
     parser = argparse.ArgumentParser(
         prog='Vipyr Deobfuscator',
         description='Deobfuscates obfuscated scripts',
+        epilog='Available deobfuscators:\n' + '\n'.join(
+            f'  - {deobf_name} v{version}'
+            for deobf_name, versions in get_available_deobfs().items()
+            for version in versions
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument('path', help='path to obfuscated file')
     parser.add_argument('-t', '--type', default='auto', type=str,
-                        help='type of obfuscation used, see README for options (defaults to auto)')
-    parser.add_argument('-o', '--output', help='file to output deobf result to, defaults to stdout')
+                        help='type of obfuscation used, see help for options (defaults to auto)')
+    parser.add_argument('-o', '--output', help='file to output deobf result to (defaults to stdout)')
     parser.add_argument('-s', '--skip-scan', action='store_true', help='skip scanning phase to identify schema')
     parser.add_argument('-d', '--debug', action='store_true', help='display debug logs')
     parser.add_argument('--show-expected', action='store_true', help='display expected warnings')
