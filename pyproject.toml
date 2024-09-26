@@ -1,6 +1,6 @@
 [project]
 name = "vipyr-deobf"
-version = "0.1.0"
+version = "0.2.0"
 description = "Rewrapping FieryIceStickie's Deobfuscation Tools"
 readme = "README.md"
 authors = [
@@ -13,6 +13,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+dev = ["pytest", "isort"]
 argcomplete = ["argcomplete"]
 
 [project.urls]
@@ -24,3 +25,7 @@ vipyr-deobf = "vipyr_deobf.cli:run"
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.isort]
+multi_line_output = 5
+balanced_wrapping = true

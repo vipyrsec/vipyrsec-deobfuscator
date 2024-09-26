@@ -1,7 +1,3 @@
-import inspect
-from typing import Any
-
-
 class Error(Exception):
     pass
 
@@ -21,3 +17,7 @@ class DeobfuscationFailError(Error):
         """
         self.env_vars = env_vars
         super().__init__()
+
+
+class DeobfLoadingError(Error):
+    pass

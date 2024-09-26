@@ -4,10 +4,15 @@ import binascii
 import logging
 import re
 import zlib
+from ast import (
+    Assign, Attribute, Call, Constant, Expr, Lambda,
+    Name, Slice, Subscript, UnaryOp, USub, arg, arguments
+)
 from io import StringIO
 
-from ..exceptions import DeobfuscationFailError
-from ..utils import BYTES_WEBHOOK_REGEX
+from vipyr_deobf.deobf_base import Deobfuscator, register
+from vipyr_deobf.deobf_utils import BYTES_WEBHOOK_REGEX
+from vipyr_deobf.exceptions import DeobfuscationFailError
 
 logger = logging.getLogger('deobf')
 
@@ -137,12 +142,11 @@ def regex_nab_bytes(marshalled_bytes: bytes) -> bytes:
     return rtn_bytes[0]
 
 
-def deobf_fct(code: str) -> bytes:
+def deobf(code: str) -> bytes:
     """
     Deobfuscates the not pyobfuscate schema
     :return: Marshalled code object of the source code
     """
-    logger.info('Deobfuscating FCT format')
     obf_bytes = nab_surface_payload(code)
 
     for iteration in range(MAX_DEOBF_LIMIT):
@@ -165,7 +169,7 @@ def deobf_fct(code: str) -> bytes:
     )
 
 
-def format_fct(marshalled_bytes: bytes) -> str:
+def format_results(marshalled_bytes: bytes) -> str:
     logger.info('Obfuscation complete, formatting output')
     webhooks = BYTES_WEBHOOK_REGEX.findall(marshalled_bytes)
 
@@ -186,3 +190,92 @@ def format_fct(marshalled_bytes: bytes) -> str:
             logger.info(f'{webhook.decode()}')
 
     return rtn_string.getvalue()
+
+
+def match_inner_underscore_function(node: ast.Call):
+    match node:
+        case Call(
+            func=Attribute(
+                value=Call(
+                    func=Name(id='__import__'),
+                    args=[Constant(value='zlib')]
+                ),
+                attr='decompress',
+            ),
+            args=[
+                Call(
+                    func=Attribute(
+                        value=Call(
+                            func=Name(id='__import__'),
+                            args=[Constant(value='base64')]
+                        ),
+                        attr='b64decode',
+                    ),
+                    args=[
+                        Subscript(
+                            value=Name(id='__'),
+                            slice=Slice(
+                                step=UnaryOp(op=USub(), operand=Constant(value=1))),
+                        )
+                    ]
+                )
+            ]
+        ):
+            return True
+    return False
+
+
+class FCTScanner(ast.NodeVisitor):
+    def __init__(self):
+        self.underscore_function_found = False
+        self.payload_found = False
+
+    def visit_Assign(self, node):
+        match node:
+            case Assign(
+                targets=[Name(id='_')],
+                value=Lambda(
+                    args=arguments(args=[arg(arg='__')]),
+                    body=Call(
+                        func=Attribute(
+                            value=Call(
+                                func=Name(id='__import__'),
+                                args=[Constant(value='marshal')]
+                            ),
+                            attr='loads',
+                        ),
+                        args=[body]
+                    ) | body
+                )
+            ) if match_inner_underscore_function(body):
+                self.underscore_function_found = True
+                return
+
+    def visit_Expr(self, node):
+        match node:
+            case Expr(
+                value=Call(
+                    func=Name(id='exec'),
+                    args=[
+                        Call(
+                            func=Name(id='_'),
+                            args=[Constant(value=payload)]
+                        )
+                    ]
+                )
+            ) if isinstance(payload, bytes):
+                self.payload_found = True
+                return
+
+
+def scan(code: str):
+    fct_scanner = FCTScanner()
+    fct_scanner.visit(ast.parse(code))
+    return (
+        fct_scanner.underscore_function_found
+        and fct_scanner.payload_found
+    )
+
+
+fct_deobf = Deobfuscator(deobf, format_results, scan)
+register(fct_deobf)

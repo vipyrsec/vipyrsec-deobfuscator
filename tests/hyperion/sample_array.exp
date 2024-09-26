@@ -1,0 +1,4 @@
+import numpy as np
+arr = np.zeros(10**14)
+if 1 + 1 == 2:
+    print(arr)

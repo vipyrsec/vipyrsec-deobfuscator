@@ -7,7 +7,8 @@ from ast import Assign, Attribute, Call, Constant, Dict, Lambda, Name, keyword
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
-from ..utils import WEBHOOK_REGEX
+from vipyr_deobf.deobf_base import Deobfuscator, register
+from vipyr_deobf.deobf_utils import WEBHOOK_REGEX
 
 logger = logging.getLogger('deobf')
 
@@ -84,25 +85,6 @@ def extract_payload(tree: ast.Module) -> None | tuple[str, PayloadType1 | Payloa
     return extractor.obf_type, extractor.payload
 
 
-def deobf_pyobfuscate(code: str) -> str | None:
-    logger.info('Running pyobfuscate')
-    tree = ast.parse(code)
-    result = extract_payload(tree)
-    if result is None:
-        return None
-
-    logger.info('Payload found')
-    obf_type, payload = result
-    if obf_type == 'pyobfuscate':
-        logger.info('Payload identified as first variant')
-        return deobf_first_variant(*payload)
-    elif obf_type == 'obfuscate':
-        logger.info('Payload identified as second variant')
-        return deobf_second_variant(*payload)
-    else:
-        logger.error('Unknown obf type. This should never happen, so please report this.')
-
-
 def deobf_first_variant(key0: str, value0: str, value2: bytes) -> str:
     logger.info('Running first variant on payload')
     key = hashlib.sha256(f'{key0}{value0}'.encode()).digest()[:24]
@@ -131,7 +113,25 @@ def deobf_second_variant(value: str, key: str) -> str:
     return AES.new(cipherkey, AES.MODE_CFB, data).decrypt(key[8:]).decode()
 
 
-def format_pyobfuscate(deobfed_code: str) -> str:
+def deobf(code: str) -> str | None:
+    tree = ast.parse(code)
+    result = extract_payload(tree)
+    if result is None:
+        return None
+
+    logger.info('Payload found')
+    obf_type, payload = result
+    if obf_type == 'pyobfuscate':
+        logger.info('Payload identified as first variant')
+        return deobf_first_variant(*payload)
+    elif obf_type == 'obfuscate':
+        logger.info('Payload identified as second variant')
+        return deobf_second_variant(*payload)
+    else:
+        logger.error('Unknown obf type. This should never happen, so please report this.')
+
+
+def format_results(deobfed_code: str) -> str:
     logger.info('Code has been deobfuscated successfully')
     webhooks = WEBHOOK_REGEX.findall(deobfed_code)
     if webhooks:
@@ -139,3 +139,13 @@ def format_pyobfuscate(deobfed_code: str) -> str:
         for webhook in webhooks:
             logger.info(f'{webhook}')
     return deobfed_code
+
+
+def scan(code: str):
+    extractor = PayloadExtractor()
+    extractor.visit(ast.parse(code))
+    return bool(extractor.obf_type)
+
+
+pyobfuscate_deobf = Deobfuscator(deobf, format_results, scan)
+register(pyobfuscate_deobf)
