@@ -20,7 +20,9 @@ pip install "vipyr-deobf[argcomplete] @ git+https://github.com/vipyrsec/vipyrsec
 ## Usage
 
 ```bash
-py -m vipyr-deobf mal.py
+py -m vipyr_deobf mal.py
+# or
+vipyr-deobf mal.py
 ```
 
 By default, the deobfuscator will make a 'best attempt' at discerning the obfuscation. If it is unable to detect the obfuscation type,
