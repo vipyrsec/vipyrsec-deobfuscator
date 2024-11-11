@@ -34,7 +34,6 @@ class Deobfuscator:
             raise DeobfLoadingError('Deobfuscator was not initialized in a deobf module: see repo README')
         obf_name = normalize_deobf_name(module_name)
         res = parse_deobf_file_name(filename)
-        print(res, obf_name)
         if not res:
             raise DeobfLoadingError('Filename does not match module name: see repo README')
         name, version = res
