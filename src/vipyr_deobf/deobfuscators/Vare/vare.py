@@ -12,7 +12,7 @@ import zlib
 
 from cryptography.fernet import Fernet
 
-from build.lib.vipyr_deobf.exceptions import DeobfuscationFailError
+from vipyr_deobf.exceptions import DeobfuscationFailError
 from vipyr_deobf.deobf_base import Deobfuscator, register
 from vipyr_deobf.deobf_utils import WEBHOOK_REGEX
 
