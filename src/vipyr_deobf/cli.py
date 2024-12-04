@@ -75,7 +75,8 @@ def run():
     for deobf in deobfs:
         try:
             logger.info(f'Running deobf of {args.path} with schema {deobf.name}')
-            output = deobf.deobf(data)
+            results = deobf.deobf(data)
+            output = deobf.format_results(results)
         except DeobfuscationFailError as exc:
             logger.exception(f'Deobfuscation of {args.path} with schema {deobf.name} failed:')
             for var, data in exc.env_vars.items():
