@@ -1,57 +1,91 @@
+# PYTHON_ARGCOMPLETE_OK
 import argparse
-from typing import Callable, NoReturn, TextIO, TypeVar
+import importlib.util
+import logging
 
-from .deobfuscators.hyperion import format_hyperion, deobf_hyperion
-from .deobfuscators.lzmaspam import format_lzma_b64, deobf_lzma_b64
-from .deobfuscators.vare import format_vare, deobf_vare
-from .deobfuscators.not_pyobfuscate import format_not_pyobfuscate, deobf_not_pyobfuscate
-from .exceptions import DeobfuscationFailError, InvalidSchemaError
-
-R = TypeVar('R')
-
-supported_obfuscators: dict[str, tuple[Callable[[TextIO], R], Callable[[R], str]]] = {
-    'hyperion': (deobf_hyperion, format_hyperion),
-    'lzmaspam': (deobf_lzma_b64, format_lzma_b64),
-    'vare': (deobf_vare, format_vare),
-    'not_pyobfuscate': (deobf_not_pyobfuscate, format_not_pyobfuscate),
-}
-
-alias_dict: dict[str, str] = {
-    'vore': 'vare',
-    'hyperd': 'hyperion',
-    'fct-obfuscate': 'not_pyobfuscate',
-}
+from vipyr_deobf.deobf_base import (
+    get_available_deobfs, iter_deobfs, load_all_deobfs, load_deobfs
+)
+from vipyr_deobf.exceptions import DeobfuscationFailError
+from vipyr_deobf.utils import Color, setup_logging
 
 
-def run_deobf(file: TextIO, deobf_type: str) -> NoReturn:
-    deobf_type = alias_dict.get(deobf_type, deobf_type)
-    if deobf_type not in supported_obfuscators:
-        raise InvalidSchemaError([*supported_obfuscators])
-
-    deobf_func, format_func = supported_obfuscators[deobf_type]
-    results = deobf_func(file)
-    print(format_func(results))
-
-
-def run():
+def get_parser():
     parser = argparse.ArgumentParser(
         prog='Vipyr Deobfuscator',
         description='Deobfuscates obfuscated scripts',
+        epilog='Available deobfuscators:\n' + '\n'.join(
+            f'  - {deobf_name} v{version}'
+            for deobf_name, versions in get_available_deobfs().items()
+            for version in versions
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument('-p', '--path')
-    parser.add_argument('-t', '--type')
+    parser.add_argument('path', help='path to obfuscated file')
+    parser.add_argument('-t', '--type', default='auto', type=str,
+                        help='type of obfuscation used, see help for options (defaults to auto)')
+    parser.add_argument('-o', '--output', help='file to output deobf result to (defaults to stdout)')
+    parser.add_argument('-s', '--skip-scan', action='store_true', help='skip scanning phase to identify schema')
+    parser.add_argument('-d', '--debug', action='store_true', help='display debug logs')
+    parser.add_argument('--show-expected', action='store_true', help='display expected warnings')
+    return parser
+
+
+def run():
+    parser = get_parser()
+    if importlib.util.find_spec('argcomplete') is not None:
+        import argcomplete
+        argcomplete.autocomplete(parser)
+
     args = parser.parse_args()
+
+    logger = logging.getLogger('deobf')
+    setup_logging(args)
+    logger.info('Logging setup finished')
+
+    logger.info(f'Opening file at {args.path}')
     try:
         with open(args.path, 'r') as file:
-            run_deobf(file, args.type)
+            data = file.read()
     except FileNotFoundError:
-        print(f'{args.path} is not a valid path.')
-    except InvalidSchemaError as exc:
-        print(exc)
-    except DeobfuscationFailError as exc:
-        print(f'Deobfuscation of {args.path} with schema <{args.type}> failed:')
-        print(exc)
+        logger.error(f'{args.path} is not a valid path.')
+        return
+    logger.info('Data successfully read from file')
 
+    logger.info('Loading deobfuscators...')
+    if args.type == 'auto':
+        load_all_deobfs()
+    else:
+        load_deobfs(args.type)
 
-if __name__ == '__main__':
-    run()
+    if args.skip_scan:
+        deobfs = [*iter_deobfs()]
+    else:
+        logger.info('Running scanners...')
+        deobfs = []
+        for deobf in iter_deobfs():
+            logger.info(f'Scanning with schema {deobf.name}v{deobf.version}')
+            if deobf.scan(data):
+                logger.info('Scan succeeded, adding to schema list')
+                deobfs.append(deobf)
+            else:
+                logger.info('Scan failed, skipping')
+    logger.info(f'Schema list: {", ".join([deobf.name for deobf in deobfs])}')
+
+    for deobf in deobfs:
+        try:
+            logger.info(f'Running deobf of {args.path} with schema {deobf.name}')
+            results = deobf.deobf(data)
+            output = deobf.format_results(results)
+        except DeobfuscationFailError as exc:
+            logger.exception(f'Deobfuscation of {args.path} with schema {deobf.name} failed:')
+            for var, data in exc.env_vars.items():
+                print(f'{Color.bold_red}{var}{Color.clear}', data, sep='\n', end='\n\n')
+        else:
+            if args.output is None:
+                print(output)
+            else:
+                logger.info(f'Writing results of deobf to file {args.output}')
+                with open(args.output, 'w') as file:
+                    file.write(output)
+            break

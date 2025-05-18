@@ -1,23 +1,54 @@
-import ast
-import base64
-import re
-
-WEBHOOK_REGEX = re.compile(
-    r'https?://(ptb\.|canary\.)?discord(app)?\.com/api(/v\d{1,2})?/webhooks/(\d{17,21})/([\w-]{68})'
-)
-BYTES_WEBHOOK_REGEX = re.compile(
-    br'https?://(ptb\.|canary\.)?discord(app)?\.com/api(/v\d{1,2})?/webhooks/(\d{17,21})/([\w-]{68})'
-)
+import argparse
+import logging
+import logging.config
 
 
-def unwrap_base64_b64decode(inp_string):
-    """
-    Decodes a common pattern in lzma spam
-    """
-    return re.sub(
-        r'getattr\(__import__\(bytes\(\[98, 97, 115, 101, 54, 52]\)\.decode\(\)\), '
-        r'bytes\(\[98, 54, 52, 100, 101, 99, 111, 100, 101]\)'
-        r'\.decode\(\)\)\(bytes\(\[(\d+(?:, \d+)*)]\)\)\.decode\(\)',
-        lambda s: f"'{base64.b64decode(bytes(map(int, s.group(1).split(', ')))).decode()}'",
-        inp_string
-    )
+class Color:
+    clear = '\x1b[0m'
+    red = '\x1b[0;31m'
+    green = '\x1b[0;32m'
+    yellow = '\x1b[0;33m'
+    blue = '\x1b[0;34m'
+    white = '\x1b[0;37m'
+    bold_red = '\x1b[1;31m'
+    bold_green = '\x1b[1;32m'
+    bold_yellow = '\x1b[1;33m'
+    bold_blue = '\x1b[1;34m'
+    bold_white = '\x1b[1;37m'
+
+
+class NoSoftWarning(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return not record.msg.endswith('(Expected)')
+
+
+def setup_logging(args: argparse.Namespace):
+    logging_config = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'default': {
+                'format': f'{Color.bold_yellow}[{Color.blue}%(asctime)s{Color.bold_yellow}]'
+                          f'{Color.bold_white}:{Color.green}%(levelname)s'
+                          f'{Color.bold_white}:{Color.red}%(message)s{Color.clear}'
+            }
+        },
+        'handlers': {
+            'stdout': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'default',
+                'stream': 'ext://sys.stdout',
+                'filters': [] if args.show_expected else ['no_soft_warning']
+            }
+        },
+        'filters': {
+            'no_soft_warning': {'()': 'vipyr_deobf.utils.NoSoftWarning'}
+        },
+        'loggers': {
+            'root': {
+                'level': 'DEBUG' if args.debug else 'INFO',
+                'handlers': ['stdout']
+            }
+        }
+    }
+    logging.config.dictConfig(logging_config)
