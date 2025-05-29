@@ -6,6 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Bradley Reynolds", email = "bradley.reynolds@darbia.dev" },
 ]
+requires-python = ">=3.10"
 license = { text = "MIT" }
 dependencies = [
     "cryptography",
@@ -13,7 +14,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "isort"]
+dev = ["pytest", "ruff"]
 argcomplete = ["argcomplete"]
 
 [project.urls]
@@ -26,6 +27,18 @@ vipyr-deobf = "vipyr_deobf.cli:run"
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.ruff.format]
+quote-style = "single"
+
 [tool.isort]
 multi_line_output = 5
 balanced_wrapping = true
+
+[tool.pyright]
+pythonVersion = "3.10"
+typeCheckingMode = "strict"
+reportOptionalMemberAccess = false
+reportAny = false
+reportExplicitAny = false
+reportUnusedCallResult = false
+reportImplicitStringConcatenation = false

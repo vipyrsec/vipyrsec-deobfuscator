@@ -1,3 +1,6 @@
+from typing import Any
+
+
 class Error(Exception):
     pass
 
@@ -10,7 +13,7 @@ class DeobfuscationFailError(Error):
     """
     A generic exception for when deobfuscation fails
     """
-    def __init__(self, **env_vars):
+    def __init__(self, **env_vars: Any):
         """
         Deobfuscation Failure
         :param env_vars: Relevant environment variables for debugging
