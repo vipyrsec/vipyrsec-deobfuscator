@@ -22,7 +22,9 @@ class NoSoftWarning(logging.Filter):
         return not record.msg.endswith('(Expected)')
 
 
-def setup_logging(args: argparse.Namespace):
+def setup_logging(args: argparse.Namespace | None = None):
+    show_expected = True if args is None else args.show_expected
+    debug = False if args is None else args.show_expected
     logging_config = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -38,7 +40,7 @@ def setup_logging(args: argparse.Namespace):
                 'class': 'logging.StreamHandler',
                 'formatter': 'default',
                 'stream': 'ext://sys.stdout',
-                'filters': [] if args.show_expected else ['no_soft_warning']
+                'filters': [] if show_expected else ['no_soft_warning']
             }
         },
         'filters': {
@@ -46,7 +48,7 @@ def setup_logging(args: argparse.Namespace):
         },
         'loggers': {
             'root': {
-                'level': 'DEBUG' if args.debug else 'INFO',
+                'level': 'DEBUG' if debug else 'INFO',
                 'handlers': ['stdout']
             }
         }

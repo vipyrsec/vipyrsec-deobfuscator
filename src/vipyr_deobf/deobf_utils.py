@@ -2,6 +2,7 @@ import ast
 import base64
 import operator
 import re
+from typing_extensions import override
 import zlib
 from ast import Constant
 from collections.abc import Callable
@@ -51,10 +52,12 @@ class StringCollapser(ast.NodeTransformer):
         :param renamer: Either a string to rename everything to, or a function that receives the original
         variable name as argument and outputs the new name
         """
-        self.renamer = (lambda _: renamer) if isinstance(renamer, str) else renamer
+        self.renamer: Callable[[str], str] = (lambda _: renamer) if isinstance(renamer, str) else renamer
 
-    def visit_Constant(self, node):
+    @override
+    def visit_Constant(self, node: Constant):
         match node:
             case Constant(value=str(value)):
                 return Constant(value=self.renamer(value))
-        return node
+            case _:
+                return node
