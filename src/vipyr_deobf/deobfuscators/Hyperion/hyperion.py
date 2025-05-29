@@ -12,6 +12,8 @@ If the malware author somehow removed it, then lines like
         elif 337143 > 2680668:
             _theory(_modulo = -56047 * -45510).Calculate(CallFunction = _builtins._system * 14696)
 and generally weird looking pseudo-math code is probably Hyperion
+
+Note: This deobfuscator could potentially produce incorrect code (this would probably require someone to write code specifically to confuse the deobf, and it would be noticably incorrect)
 """
 
 from __future__ import annotations
