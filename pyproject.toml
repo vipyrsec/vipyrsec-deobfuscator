@@ -11,6 +11,7 @@ license = { text = "MIT" }
 dependencies = [
     "cryptography",
     "pycryptodome",
+    "typing-extensions>=4.13.2",
 ]
 
 [project.optional-dependencies]

@@ -304,6 +304,7 @@ source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
     { name = "pycryptodome" },
+    { name = "typing-extensions" },
 ]
 
 [package.optional-dependencies]
@@ -322,5 +323,6 @@ requires-dist = [
     { name = "pycryptodome" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "ruff", marker = "extra == 'dev'" },
+    { name = "typing-extensions", specifier = ">=4.13.2" },
 ]
 provides-extras = ["dev", "argcomplete"]

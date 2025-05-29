@@ -428,6 +428,21 @@ class SecondLayerTransformer(ast.NodeTransformer):
                 logger.info(f'Assigning {name} = {value!r}')
                 self.var_dict[name] = value
                 return None
+            case Assign(
+                targets=[
+                    Subscript(
+                        value=Constant(MockObj('globals' | 'locals' | 'vars')),
+                        slice=Constant(MockObj('MockStr', obj=str(name))),
+                    )
+                ],
+                value=Subscript(
+                        value=Constant(MockObj('globals' | 'locals' | 'vars')),
+                        slice=Constant(MockObj('MockStr', obj=str(value))),
+            ),
+            ):
+                logger.info(f'Assigning {name} = {value}')
+                self.var_dict[name] = MockObj(value)
+                return None
             case _:
                 return node
 
