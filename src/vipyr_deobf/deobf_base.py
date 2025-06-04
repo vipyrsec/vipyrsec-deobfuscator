@@ -7,7 +7,8 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
-from typing import TypeVar
+import sys
+from typing import Any, Generic, TypeVar
 
 from vipyr_deobf.exceptions import DeobfLoadingError
 
@@ -18,7 +19,7 @@ logger = logging.getLogger('deobf')
 
 
 @dataclass
-class Deobfuscator:
+class Deobfuscator(Generic[R]):
     deobf_func: Callable[[str], R]
     format_func: Callable[[R], str]
     scan_func: Callable[[str], bool]
@@ -31,14 +32,20 @@ class Deobfuscator:
         try:
             module_name, filename = rel_path.parts
         except ValueError:
-            raise DeobfLoadingError('Deobfuscator was not initialized in a deobf module: see repo README')
+            raise DeobfLoadingError(
+                'Deobfuscator was not initialized in a deobf module: see repo README'
+            )
         obf_name = normalize_deobf_name(module_name)
         res = parse_deobf_file_name(filename)
         if not res:
-            raise DeobfLoadingError('Filename does not match module name: see repo README')
+            raise DeobfLoadingError(
+                'Filename does not match module name: see repo README'
+            )
         name, version = res
         if name != obf_name:
-            raise DeobfLoadingError('Filename does not match module name: see repo README')
+            raise DeobfLoadingError(
+                'Filename does not match module name: see repo README'
+            )
         self.name = name
         self.version = version
 
@@ -48,11 +55,11 @@ class Deobfuscator:
     def format_results(self, res: R) -> str:
         return self.format_func(res)
 
-    def scan(self, obf: R) -> bool:
+    def scan(self, obf: str) -> bool:
         return self.scan_func(obf)
 
 
-DEOBFS: dict[str, dict[int, Deobfuscator]] = {}
+DEOBFS: dict[str, dict[int, Deobfuscator[Any]]] = {}
 
 
 def normalize_deobf_name(name: str) -> str:
@@ -60,16 +67,18 @@ def normalize_deobf_name(name: str) -> str:
 
 
 def parse_deobf_file_name(filename: str) -> tuple[str, int] | None:
-    res = re.match(fr'([a-zA-Z]+)(?:_v(\d+))?\.py$', filename)
+    res = re.match(r'([a-zA-Z]+)(?:_v(\d+))?\.py$', filename)
     if not res:
         return None
     return res.group(1), int(res.group(2) or 1)
 
 
-def register(deobf: Deobfuscator) -> None:
+def register(deobf: Deobfuscator[R]) -> None:
     deobf_versions = DEOBFS.setdefault(deobf.name, {})
     if deobf.version in deobf_versions:
-        raise DeobfLoadingError(f'Version {deobf.version} of {deobf.name} has already been loaded')
+        raise DeobfLoadingError(
+            f'Version {deobf.version} of {deobf.name} has already been loaded'
+        )
     deobf_versions[deobf.version] = deobf
 
 
@@ -83,7 +92,7 @@ alias_dict = {
 
 @cache
 def get_available_deobfs() -> dict[str, dict[int, Path]]:
-    available_deobfs = {}
+    available_deobfs: dict[str, dict[int, Path]] = {}
     for deobf_dir in deobf_path.iterdir():
         deobf_name = normalize_deobf_name(deobf_dir.name)
         available_deobfs[deobf_name] = {
@@ -107,25 +116,32 @@ def load_deobfs(opt_str: str) -> None:
             raise DeobfLoadingError(f'{name} is not the name of a deobfuscator')
         elif version not in available_deobfs[name]:
             raise DeobfLoadingError(f'Version {version} of {name} does not exist')
-        spec = importlib.util.spec_from_file_location('bobin', available_deobfs[name][version])
+        full_name = f'{name}.v{version}'
+        spec = importlib.util.spec_from_file_location(
+            full_name,
+            available_deobfs[name][version],
+        )
+        if spec is None:
+            raise ValueError(f'Could not find deobf {name} {version}')
         module = importlib.util.module_from_spec(spec)
+        sys.modules[full_name] = module
         spec.loader.exec_module(module)
 
 
 def load_all_deobfs() -> None:
     available_deobfs = get_available_deobfs()
-    for versions in available_deobfs.values():
-        for deobf in versions.values():
+    for name, versions in available_deobfs.items():
+        for version, deobf in versions.items():
             logger.info(f'Loading {deobf.stem}')
-            spec = importlib.util.spec_from_file_location('bobin', deobf)
+            full_name = f'{name}.v{version}'
+            spec = importlib.util.spec_from_file_location(full_name, deobf)
+            if spec is None:
+                raise ValueError(f'Could not find deobf {deobf.name}')
             module = importlib.util.module_from_spec(spec)
+            sys.modules[name] = module
             spec.loader.exec_module(module)
             logger.info(f'Finished loading {deobf.stem}')
 
 
-def iter_deobfs() -> Iterator[Deobfuscator]:
-    return (
-        deobf
-        for versions in DEOBFS.values()
-        for deobf in versions.values()
-    )
+def iter_deobfs() -> Iterator[Deobfuscator[Any]]:
+    return (deobf for versions in DEOBFS.values() for deobf in versions.values())
