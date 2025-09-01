@@ -170,7 +170,7 @@ def deobf(code: str) -> bytes:
 
 
 def format_results(marshalled_bytes: bytes) -> str:
-    logger.info('Obfuscation complete, formatting output')
+    logger.info('Deobfuscation complete, formatting output')
     webhooks = BYTES_WEBHOOK_REGEX.findall(marshalled_bytes)
 
     rtn_string = StringIO()
