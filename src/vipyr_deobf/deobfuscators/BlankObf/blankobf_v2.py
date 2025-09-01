@@ -274,7 +274,7 @@ def format_results(results: tuple[bool, ast.Module]) -> str:
         logger.error('Code could not be fully deobfuscated: Attempting to return partial results now')
         return ast.unparse(tree)
 
-    logger.info('Obfuscation complete, formatting output')
+    logger.info('Deobfuscation complete, formatting output')
     deobfed_code = ast.unparse(tree)
     webhooks = WEBHOOK_REGEX.findall(deobfed_code)
     if webhooks:
