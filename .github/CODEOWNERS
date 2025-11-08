@@ -1,0 +1,4 @@
+*              @vipyrsec/core-developers @vipyrsec/security-reviewers
+/.github/      @vipyrsec/devops
+/.dockerignore @vipyrsec/devops
+/Dockerfile    @vipyrsec/devops
