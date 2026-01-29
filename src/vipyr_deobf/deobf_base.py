@@ -138,7 +138,7 @@ def load_all_deobfs() -> None:
             if spec is None:
                 raise ValueError(f'Could not find deobf {deobf.name}')
             module = importlib.util.module_from_spec(spec)
-            sys.modules[name] = module
+            sys.modules[full_name] = module
             spec.loader.exec_module(module)
             logger.info(f'Finished loading {deobf.stem}')
 
